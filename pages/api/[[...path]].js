@@ -21,7 +21,13 @@ const queries = [
 ];
 
 const doQuery = async (res, obj, id) => {
-	var q = obj.query;
+	let q = JSON.parse(JSON.stringify(obj.query));
+	if (obj.cache) {
+		const results = obj.cache;
+		console.log("CACHED");
+		res.json({ 'numResults': results.length, 'rows': results });
+		return;
+	}
 	if (q.indexOf('{{id}}') > 0) {
 		if (id) {
 			id = id.replace('+',' ');
@@ -49,25 +55,30 @@ const doQuery = async (res, obj, id) => {
 
 const handler = async (req, res) => {
 	try {
-		if (!db) { db = await (new Db({
-			host: process.env['JBC_MYSQL_HOST'],
-			username: process.env['JBC_MYSQL_USERNAME'],
-			user: process.env['JBC_MYSQL_USER'],
-			database: process.env['JBC_MYSQL_DATABASE'],
-			password: process.env['JBC_MYSQL_PASSWORD'],
-			waitForConnection: process.env['JBC_MYSQL_WAITFORCONNECTION'],
-			connectionLimit: process.env['JBC_MYSQL_CONNECTIONLIMIT'],
-			queueLimit: process.env['JBC_MYSQL_QUEUELIMIT'],
-		})).start(); }
+		if (!db) {
+			db = await (new Db({
+				host: process.env['JBC_MYSQL_HOST'],
+				username: process.env['JBC_MYSQL_USERNAME'],
+				user: process.env['JBC_MYSQL_USER'],
+				database: process.env['JBC_MYSQL_DATABASE'],
+				password: process.env['JBC_MYSQL_PASSWORD'],
+				waitForConnection: process.env['JBC_MYSQL_WAITFORCONNECTION'],
+				connectionLimit: process.env['JBC_MYSQL_CONNECTIONLIMIT'],
+				queueLimit: process.env['JBC_MYSQL_QUEUELIMIT'],
+			})).start();
+		}
+		console.log("DB", db, process.env['JBC_MYSQL_HOST']);
 		const { path = [] } = req.query;
 		const [ noun, ...args ] = path;
 		const obj = queries.find(q => q.noun === noun);
 		if (obj) {
 			await doQuery(res, obj, args[0]);
+			console.log("DONE");
 		} else {
 			res.status(400).send({ error: `bad request` });
 		}
 	} catch (e) {
+		console.log("ERROR", e);
 		res.status(400).send(e);
 	}
 }
