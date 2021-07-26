@@ -1,0 +1,17 @@
+{
+  "name": "data.jazzbutcher.com",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "mywrap": "git+https://github.com/xpollen8/mywrap.git",
+    "next": "^10.0.0",
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
+    "urlencode": "^1.1.0"
+  }
+}
