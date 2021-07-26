@@ -24,7 +24,7 @@ const doQuery = async (res, obj, id) => {
 	let q = JSON.parse(JSON.stringify(obj.query));
 	if (obj.cache) {
 		const results = obj.cache;
-		console.log("CACHED");
+		console.log("CACHED", obj.noun);
 		res.json({ 'numResults': results.length, 'rows': results });
 		return;
 	}
@@ -67,13 +67,12 @@ const handler = async (req, res) => {
 				queueLimit: process.env['JBC_MYSQL_QUEUELIMIT'],
 			})).start();
 		}
-		console.log("DB", db, process.env['JBC_MYSQL_HOST']);
+		//console.log("DB", db, process.env['JBC_MYSQL_HOST']);
 		const { path = [] } = req.query;
 		const [ noun, ...args ] = path;
 		const obj = queries.find(q => q.noun === noun);
 		if (obj) {
 			await doQuery(res, obj, args[0]);
-			console.log("DONE");
 		} else {
 			res.status(400).send({ error: `bad request` });
 		}
