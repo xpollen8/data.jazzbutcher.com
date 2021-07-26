@@ -4,6 +4,7 @@ const Db = require('mywrap');
 let db;
 
 const queries = [
+	{ noun: "press", query: "select * from press order by album, dtpublished desc" },
 	{ noun: "posters", query: "select datetime from gig where extra like '%poster%' order by datetime desc" },
 	{ noun: "gigs", query: "select * from gig" },
 	{ noun: "gigs_and_year", query: "select *, year(datetime) as year from gig order by datetime desc" },
