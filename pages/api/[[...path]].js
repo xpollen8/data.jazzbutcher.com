@@ -9,6 +9,9 @@ const queries = [
 	{ key: 'person', noun: "interviews_by_person", query: "select * from press where type like '%interview%' and {{key}}='{{value}}' order by dtpublished desc" },
 	{ noun: "posters", query: "select datetime from gig where extra like '%poster%' and isdeleted IS NULL order by datetime desc" },
 	{ noun: "gigs", query: "select * from gig where isdeleted IS NULL" },
+	{ noun: "gigsongs", query: "select * from gigsong" },
+	{ noun: "performances", query: "select * from performance" },
+	{ noun: "presses", query: "select * from press" },
 	{ key: 'gig_id', noun: 'gig', query: "select * from gig where ? AND isdeleted IS NULL", joins: [
 		{ name: 'played', key: 'datetime', noun: 'gigsong' },
 		{ name: 'players', key: 'datetime', noun: 'performance' },
