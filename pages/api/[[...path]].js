@@ -24,6 +24,7 @@ const queries = [
 		{ name: 'text', key: 'datetime', noun: 'gigtext_by_datetime' },
 		]
 	},
+	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%'" },
 	{ key: 'datetime', noun: "gigsong", query: "select * from gigsong where ?" },
 	{ key: 'datetime', noun: "performance", query: "select * from performance where ?" },
 	{ noun: "gigs_and_year", query: "select *, year(datetime) as year from gig where isdeleted IS NULL order by datetime desc" },
@@ -45,9 +46,9 @@ const doQuery = async (noun, key, type, value) => {
 			return { noun, key, value, error: 'object not found' }
 		}
 		key = key || obj.key || 'id';
-		console.log("OBJ", { noun, key, value, obj });
+		//console.log("OBJ", { noun, key, value, obj });
 		let sql = JSON.parse(JSON.stringify(obj.query));
-		console.log("Q", { sql, key, value });
+		//console.log("Q", { sql, key, value });
 		//if (obj.cache) {
 			//const results = obj.cache;
 			//return { noun, key, value, cached: true, 'numResults': results.length, 'rows': results };
@@ -68,7 +69,7 @@ const doQuery = async (noun, key, type, value) => {
 				return { noun, key, value, error: "ID REQUIRED" };
 			}
 		}
-		console.log("SQL", sql, [ { [key]: value } ]);
+		//console.log("SQL", sql, [ { [key]: value } ]);
 		let Q;
 		if (type === 'like') {
 			sql = sql.replace('?', `${key} like ?`);
@@ -76,11 +77,11 @@ const doQuery = async (noun, key, type, value) => {
 		} else {
 			Q = mysql.format(sql, [ { [key]: value } ]);
 		}
-		console.log("Q", Q);
+		//console.log("Q", Q);
 		//const X = await db.query(sql, [ { [key]: value } ])
 		const X = await db.query(Q)
 			.then(async results => {
-				console.log("RES", { key, results });
+				//console.log("RES", { key, results });
 				const V = await Promise.all((obj.joins || []).map(async o => {
 					const jname = o.name;
 					const jkey = o.key;
@@ -89,7 +90,7 @@ const doQuery = async (noun, key, type, value) => {
 					const joins = await Promise.all(results.map(async row => {
 						if (row) {
 							const jvalue = row[jkey];
-							console.log("ROW", { jkey, jvalue });
+							//console.log("ROW", { jkey, jvalue });
 							if (!jvalue) {
 								return { noun: jnoun, key: jkey, value, jvalue, error: 'no join value' };
 							}
@@ -99,7 +100,7 @@ const doQuery = async (noun, key, type, value) => {
 							return { [jname]: res }
 						}
 					}));
-					console.log("JOINS", joins);
+					//console.log("JOINS", joins);
 					//Object.keys(V).forEach(m => results[m] = V[m]);
 					return joins;
 				}));
@@ -139,7 +140,10 @@ const handler = async (req, res) => {
 		//console.log("DB", db, process.env['JBC_MYSQL_HOST']);
 		const { path = [] } = req.query;
 		let [ noun, key, type, value ] = path;
-		if (!type) {					// gig/1974
+		const query = (Object.keys(req?.query)?.filter(f => f !== 'path'))[0]
+		if (query) {	// will override path-based queries
+			value = query;
+		} else if (!type) {					// gig/1974
 			value = key;
 			type = 'is';
 			key = null;
@@ -147,9 +151,9 @@ const handler = async (req, res) => {
 			value = type;
 			type  = 'is';
 		}
+		//console.log("USE", { noun, key, type, value });
 		const ret = await doQuery(noun, key, type, value);
 		//console.log("FINAL", ret);
-		//console.log("DONE", { noun, key, type, value });
 		res.json(ret);
 	} catch (e) {
 		console.log("ERROR", e);
