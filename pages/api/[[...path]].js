@@ -10,12 +10,18 @@ const queries = [
 	{ noun: "posters", query: "select datetime from gig where extra like '%poster%' and isdeleted IS NULL order by datetime desc" },
 	{ noun: "gigs", query: "select * from gig where isdeleted IS NULL" },
 	{ noun: "gigsongs", query: "select * from gigsong" },
+	{ noun: "gigtext", query: "select * from gigtext" },
+	{ noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
+	{ noun: "gigmedia", query: "select * from gigmedia" },
+	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where UNIX_TIMESTAMP(datetime) = UNIX_TIMESTAMP('{{value}}')" },
 	{ noun: "performances", query: "select * from performance" },
 	{ noun: "presses", query: "select * from press" },
-	{ key: 'gig_id', noun: 'gig', query: "select * from gig where ? AND isdeleted IS NULL", joins: [
-		{ name: 'played', key: 'datetime', noun: 'gigsong' },
-		{ name: 'players', key: 'datetime', noun: 'performance' },
-		{ name: 'press', key: 'datetime', noun: 'press' },
+	{ noun: 'gig', key: 'gig_id', query: "select * from gig where {{key}}={{value}} AND isdeleted IS NULL", joins: [
+		//{ name: 'played', key: 'datetime', noun: 'gigsong' },
+		//{ name: 'players', key: 'datetime', noun: 'performance' },
+		//{ name: 'press', key: 'datetime', noun: 'press' },
+		//{ name: 'media', key: 'datetime', noun: 'gigmedia' },
+		{ name: 'text', key: 'datetime', noun: 'gigtext_by_datetime' },
 		]
 	},
 	{ key: 'datetime', noun: "gigsong", query: "select * from gigsong where ?" },
@@ -142,8 +148,8 @@ const handler = async (req, res) => {
 			type  = 'is';
 		}
 		const ret = await doQuery(noun, key, type, value);
-		console.log("FINAL", ret);
-		console.log("DONE", { noun, key, type, value });
+		//console.log("FINAL", ret);
+		//console.log("DONE", { noun, key, type, value });
 		res.json(ret);
 	} catch (e) {
 		console.log("ERROR", e);
