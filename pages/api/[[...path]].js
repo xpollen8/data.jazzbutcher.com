@@ -140,9 +140,8 @@ const handler = async (req, res) => {
 		//console.log("DB", db, process.env['JBC_MYSQL_HOST']);
 		const { path = [] } = req.query;
 		let [ noun, key, type, value ] = path;
-		const query = (Object.keys(req?.query)?.filter(f => f !== 'path'))[0]
-		if (query) {	// will override path-based queries
-			value = query;
+		if (key === 'exact') {	// will override path-based queries
+			value = path.slice(2).join('/'); // [ 'feedback', 'exact', 'lyrics', 'sea_madness.html' ] -> 'lyrics/sea_madness.html'
 		} else if (!type) {					// gig/1974
 			value = key;
 			type = 'is';
