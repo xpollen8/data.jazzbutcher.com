@@ -5,17 +5,21 @@ const mysql = require('mysql2');
 let db;
 
 const queries = [
-	{ key: 'dtgig', noun: "press", query: "select * from press where ? order by album, dtpublished desc" },
-	{ key: 'person', noun: "interviews_by_person", query: "select * from press where type like '%interview%' and {{key}}='{{value}}' order by dtpublished desc" },
-	{ noun: "posters", query: "select datetime from gig where extra like '%poster%' and isdeleted IS NULL order by datetime desc" },
+	// called by jazzbutcher.com
 	{ noun: "gigs", query: "select * from gig where isdeleted IS NULL" },
 	{ noun: "gigsongs", query: "select * from gigsong" },
 	{ noun: "gigtexts", query: "select * from gigtext" },
-	{ noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
 	{ noun: "gigmedias", query: "select * from gigmedia" },
-	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where UNIX_TIMESTAMP(datetime) = UNIX_TIMESTAMP('{{value}}')" },
 	{ noun: "performances", query: "select * from performance" },
 	{ noun: "presses", query: "select * from press" },
+	{ noun: "feedbacks", query: "select * from feedback where domain_id=11" },
+
+	// others
+	{ key: 'dtgig', noun: "press", query: "select * from press where ? order by album, dtpublished desc" },
+	{ key: 'person', noun: "interviews_by_person", query: "select * from press where type like '%interview%' and {{key}}='{{value}}' order by dtpublished desc" },
+	{ noun: "posters", query: "select datetime from gig where extra like '%poster%' and isdeleted IS NULL order by datetime desc" },
+	{ noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
+	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where UNIX_TIMESTAMP(datetime) = UNIX_TIMESTAMP('{{value}}')" },
 	{ noun: 'gig', key: 'gig_id', query: "select * from gig where {{key}}={{value}} AND isdeleted IS NULL", joins: [
 		//{ name: 'played', key: 'datetime', noun: 'gigsong' },
 		//{ name: 'players', key: 'datetime', noun: 'performance' },
@@ -24,7 +28,6 @@ const queries = [
 		{ name: 'text', key: 'datetime', noun: 'gigtext_by_datetime' },
 		]
 	},
-	{ noun: "feedbacks", query: "select * from feedback where domain_id=11" },
 	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%'" },
 	{ key: 'datetime', noun: "gigsong", query: "select * from gigsong where ?" },
 	{ key: 'datetime', noun: "performance", query: "select * from performance where ?" },
