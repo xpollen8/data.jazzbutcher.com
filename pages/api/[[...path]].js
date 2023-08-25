@@ -24,6 +24,7 @@ const queries = [
 		{ name: 'text', key: 'datetime', noun: 'gigtext_by_datetime' },
 		]
 	},
+	{ noun: "feedbacks", query: "select * from feedback where domain_id=11" },
 	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%'" },
 	{ key: 'datetime', noun: "gigsong", query: "select * from gigsong where ?" },
 	{ key: 'datetime', noun: "performance", query: "select * from performance where ?" },
