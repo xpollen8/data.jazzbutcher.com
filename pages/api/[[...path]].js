@@ -20,7 +20,7 @@ const queries = [
 	{ noun: "posters", query: "select datetime from gig where extra like '%poster%' and isdeleted IS NULL order by datetime desc" },
 	{ noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
 	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where UNIX_TIMESTAMP(datetime) = UNIX_TIMESTAMP('{{value}}')" },
-	{ noun: 'gig_by_datetime', key: 'datetime', query: "select * from gig where {{key}}="{{value}}" AND isdeleted IS NULL", joins: [
+	{ noun: 'gig_by_datetime', key: 'datetime', query: "select * from gig where {{key}}='{{value}}' AND isdeleted IS NULL", joins: [
 		//{ name: 'played', key: 'datetime', noun: 'gigsong' },
 		//{ name: 'players', key: 'datetime', noun: 'performance' },
 		//{ name: 'press', key: 'datetime', noun: 'press' },
