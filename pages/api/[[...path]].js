@@ -20,7 +20,7 @@ const queries = [
 	{ noun: "posters", query: "select datetime from gig where extra like '%poster%' and isdeleted IS NULL order by datetime desc" },
 	{ noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
 	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where datetime = '{{value}}'" },
-	{ noun: 'gig_by_datetime', key: 'datetime', query: "select * from gig where {{key}}='{{value}}' AND isdeleted IS NULL", joins: [
+	{ noun: 'gig_by_datetime', key: 'datetime', query: "select *, CAST(datetime as CHAR) as datetime from gig where {{key}}='{{value}}' AND isdeleted IS NULL", joins: [
 			{ name: 'played', key: 'datetime', noun: 'gigsong' },
 			{ name: 'media', key: 'datetime', noun: 'gigmedia' },
 			{ name: 'text', key: 'datetime', noun: 'gigtext' },
@@ -36,8 +36,8 @@ const queries = [
 			{ name: 'press', key: 'datetime', noun: 'press' },
 		]
 	},
-	{ noun: "performance_by_datetime", key: 'datetime', query: "select * from performance where STR_TO_DATE{{key}}=STR_TO_DATE'{{value}}'" },
-	{ noun: "gigsong_by_datetime", key: 'datetime', query: "select * from gigsong where STR_TO_DATE{{key}}=STR_TO_DATE'{{value}}'" },
+	{ noun: "performance_by_datetime", key: 'datetime', query: "select * from performance where {{key}}='{{value}}'" },
+	{ noun: "gigsong_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}}='{{value}}'" },
 	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%'" },
 	{ key: 'dtgig', noun: "press", query: "select * from press where ?" },
 	{ key: 'datetime', noun: "gigmedia", query: "select * from gigmedia where ?" },
@@ -150,6 +150,7 @@ const handler = async (req, res) => {
 				waitForConnection: process.env['JBC_MYSQL_WAITFORCONNECTION'],
 				connectionLimit: process.env['JBC_MYSQL_CONNECTIONLIMIT'],
 				queueLimit: process.env['JBC_MYSQL_QUEUELIMIT'],
+				timezone: 'utc',
 			})).start();
 		}
 		//console.log("DB", db, process.env['JBC_MYSQL_HOST']);
