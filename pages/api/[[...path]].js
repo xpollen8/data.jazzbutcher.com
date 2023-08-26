@@ -111,7 +111,8 @@ const doQuery = async (noun, key, type, value) => {
 								return;
 							}
 							const res = await doQuery(jnoun, null, jtype, jvalue);
-							joins[jname] = res;
+							// only return '.results' for joined items.
+							joins[jname] = res.results;
 						}
 					}));
 				}));
