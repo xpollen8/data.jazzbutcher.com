@@ -19,24 +19,29 @@ const queries = [
 	{ key: 'person', noun: "interviews_by_person", query: "select * from press where type like '%interview%' and {{key}}='{{value}}' order by dtpublished desc" },
 	{ noun: "posters", query: "select datetime from gig where extra like '%poster%' and isdeleted IS NULL order by datetime desc" },
 	{ noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
-	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where UNIX_TIMESTAMP(datetime) = UNIX_TIMESTAMP('{{value}}')" },
-	{ noun: 'gig_by_datetime', key: 'datetime', query: "select * from gig where {{key}}='{{value}}' AND isdeleted IS NULL", joins: [
-		//{ name: 'played', key: 'datetime', noun: 'gigsong' },
-		//{ name: 'players', key: 'datetime', noun: 'performance' },
-		//{ name: 'press', key: 'datetime', noun: 'press' },
-		//{ name: 'media', key: 'datetime', noun: 'gigmedia' },
-		{ name: 'text', key: 'datetime', noun: 'gigtext_by_datetime' },
+	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where CONVERT_TZ(datetime,@@global.time_zone,@@session.time_zone) = CONVERT_TZ('{{value}}',@@global.time_zone,@@session.time_zone)" },
+	{ noun: 'gig_by_datetime', key: 'datetime', query: "select * from gig where CONVERT_TZ({{key}},@@global.time_zone,@@session.time_zone)=CONVERT_TZ('{{value}}',@@global.time_zone,@@session.time_zone) AND isdeleted IS NULL", joins: [
+			{ name: 'played', key: 'datetime', noun: 'gigsong' },
+			{ name: 'media', key: 'datetime', noun: 'gigmedia' },
+			{ name: 'text', key: 'datetime', noun: 'gigtext' },
+			{ name: 'players', key: 'datetime', noun: 'performance' },
+			{ name: 'press', key: 'datetime', noun: 'press' },
 		]
 	},
 	{ noun: 'gig', key: 'gig_id', query: "select * from gig where {{key}}={{value}} AND isdeleted IS NULL", joins: [
-		//{ name: 'played', key: 'datetime', noun: 'gigsong' },
-		//{ name: 'players', key: 'datetime', noun: 'performance' },
-		//{ name: 'press', key: 'datetime', noun: 'press' },
-		//{ name: 'media', key: 'datetime', noun: 'gigmedia' },
-		{ name: 'text', key: 'datetime', noun: 'gigtext_by_datetime' },
+			{ name: 'played', key: 'datetime', noun: 'gigsong' },
+			{ name: 'media', key: 'datetime', noun: 'gigmedia' },
+			{ name: 'text', key: 'datetime', noun: 'gigtext' },
+			{ name: 'players', key: 'datetime', noun: 'performance' },
+			{ name: 'press', key: 'datetime', noun: 'press' },
 		]
 	},
+	{ noun: "performance_by_datetime", key: 'datetime', query: "select * from performance where CONVERT_TZ({{key}},@@global.time_zone,@@session.time_zone)=CONVERT_TZ('{{value}}',@@global.time_zone,@@session.time_zone)" },
+	{ noun: "gigsong_by_datetime", key: 'datetime', query: "select * from gigsong where CONVERT_TZ({{key}},@@global.time_zone,@@session.time_zone)=CONVERT_TZ('{{value}}',@@global.time_zone,@@session.time_zone)" },
 	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%'" },
+	{ key: 'dtgig', noun: "press", query: "select * from press where ?" },
+	{ key: 'datetime', noun: "gigmedia", query: "select * from gigmedia where ?" },
+	{ key: 'datetime', noun: "gigtext", query: "select * from gigtext where ?" },
 	{ key: 'datetime', noun: "gigsong", query: "select * from gigsong where ?" },
 	{ key: 'datetime', noun: "performance", query: "select * from performance where ?" },
 	{ noun: "gigs_and_year", query: "select *, year(datetime) as year from gig where isdeleted IS NULL order by datetime desc" },
@@ -60,11 +65,12 @@ const doQuery = async (noun, key, type, value) => {
 		key = key || obj.key || 'id';
 		//console.log("OBJ", { noun, key, value, obj });
 		let sql = JSON.parse(JSON.stringify(obj.query));
-		//console.log("Q", { sql, key, value });
-		//if (obj.cache) {
-			//const results = obj.cache;
-			//return { noun, key, value, cached: true, 'numResults': results.length, 'rows': results };
-		//}
+		/* NO CACHE FOR NOW
+		if (obj.cache) {
+			const results = obj.cache;
+			return { noun, key, value, cached: true, 'numResults': results.length, 'rows': results };
+		}
+		*/
 		if (sql.indexOf(`{{key}}`) > 0) {
 			sql = sql.replace('{{key}}', key);
 		}
@@ -77,11 +83,9 @@ const doQuery = async (noun, key, type, value) => {
 				}
 				sql = sql.replace('{{value}}', value);
 			} else {
-				//console.log("ID REQUIRED");
 				return { noun, key, value, error: "ID REQUIRED" };
 			}
 		}
-		//console.log("SQL", sql, [ { [key]: value } ]);
 		let Q;
 		if (type === 'like') {
 			sql = sql.replace('?', `${key} like ?`);
@@ -89,47 +93,46 @@ const doQuery = async (noun, key, type, value) => {
 		} else {
 			Q = mysql.format(sql, [ { [key]: value } ]);
 		}
-		//console.log("Q", Q);
-		//const X = await db.query(sql, [ { [key]: value } ])
-		const X = await db.query(Q)
+		const thisResults = await db.query(Q)
 			.then(async results => {
 				//console.log("RES", { key, results });
-				const V = await Promise.all((obj.joins || []).map(async o => {
+				const joins = {};
+				await Promise.all((obj.joins || []).map(async o => {
 					const jname = o.name;
 					const jkey = o.key;
 					const jtype = o.type || 'is';
 					const jnoun = o.noun;
-					const joins = await Promise.all(results.map(async row => {
+					await Promise.all(results.map(async row => {
 						if (row) {
 							const jvalue = row[jkey];
 							//console.log("ROW", { jkey, jvalue });
 							if (!jvalue) {
-								return { noun: jnoun, key: jkey, value, jvalue, error: 'no join value' };
+								joins[jname] = { noun: jnoun, key: jkey, value, jvalue, error: 'no join value' };
+								return;
 							}
-							//console.log("JKEY", { jnoun, jkey, jvalue });
 							const res = await doQuery(jnoun, null, jtype, jvalue);
-							//console.log("RES", { jname, jkey, jvalue, res });
-							return { [jname]: res }
+							joins[jname] = res;
 						}
 					}));
-					//console.log("JOINS", joins);
-					//Object.keys(V).forEach(m => results[m] = V[m]);
-					return joins;
 				}));
-				//console.log("V", V);
-				//Object.keys(V).forEach(m => results[m] = V[m]);
-				//console.log("V", results);
+
 				if (!key) {	// only cache if no id
 					//obj.cache = row;
 				}
-				//console.log("RET1", { noun, key, value, numResults: results.length, results });
-				return { noun, key, value, numResults: results.length, results };
+
+				results.forEach((res, key) => {
+					// add the named joins to the original record
+					results[key] = { ...results[key], ...joins };
+				})
+
+				const ret = { noun, key, value, numResults: results.length, results };
+				//console.log("SUB RETURN", ret);
+				return ret;
 			})
 			.catch(error => {
 				return { noun, key, value, error };
 			});
-		//console.log("X", X);
-		return X;
+		return thisResults;
 	} catch (e) {
 		console.log("ERROR", e);
 	}
@@ -162,9 +165,9 @@ const handler = async (req, res) => {
 			value = type;
 			type  = 'is';
 		}
-		//console.log("USE", { noun, key, type, value });
+		//console.log("QUERY", { noun, key, type, value });
 		const ret = await doQuery(noun, key, type, value);
-		//console.log("FINAL", ret);
+		//console.log("OUTPUT", JSON.stringify(ret, null, 4));
 		res.json(ret);
 	} catch (e) {
 		console.log("ERROR", e);
