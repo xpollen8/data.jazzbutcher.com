@@ -19,8 +19,8 @@ const queries = [
 	{ key: 'person', noun: "interviews_by_person", query: "select * from press where type like '%interview%' and {{key}}='{{value}}' order by dtpublished desc" },
 	{ noun: "posters", query: "select datetime from gig where extra like '%poster%' and isdeleted IS NULL order by datetime desc" },
 	{ noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
-	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where CONVERT_TZ(datetime,@@global.time_zone,@@session.time_zone) = CONVERT_TZ('{{value}}',@@global.time_zone,@@session.time_zone)" },
-	{ noun: 'gig_by_datetime', key: 'datetime', query: "select * from gig where CONVERT_TZ({{key}},@@global.time_zone,@@session.time_zone)=CONVERT_TZ('{{value}}',@@global.time_zone,@@session.time_zone) AND isdeleted IS NULL", joins: [
+	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where datetime = '{{value}}'" },
+	{ noun: 'gig_by_datetime', key: 'datetime', query: "select * from gig where {{key}}='{{value}}' AND isdeleted IS NULL", joins: [
 			{ name: 'played', key: 'datetime', noun: 'gigsong' },
 			{ name: 'media', key: 'datetime', noun: 'gigmedia' },
 			{ name: 'text', key: 'datetime', noun: 'gigtext' },
@@ -36,8 +36,8 @@ const queries = [
 			{ name: 'press', key: 'datetime', noun: 'press' },
 		]
 	},
-	{ noun: "performance_by_datetime", key: 'datetime', query: "select * from performance where CONVERT_TZ({{key}},@@global.time_zone,@@session.time_zone)=CONVERT_TZ('{{value}}',@@global.time_zone,@@session.time_zone)" },
-	{ noun: "gigsong_by_datetime", key: 'datetime', query: "select * from gigsong where CONVERT_TZ({{key}},@@global.time_zone,@@session.time_zone)=CONVERT_TZ('{{value}}',@@global.time_zone,@@session.time_zone)" },
+	{ noun: "performance_by_datetime", key: 'datetime', query: "select * from performance where STR_TO_DATE{{key}}=STR_TO_DATE'{{value}}'" },
+	{ noun: "gigsong_by_datetime", key: 'datetime', query: "select * from gigsong where STR_TO_DATE{{key}}=STR_TO_DATE'{{value}}'" },
 	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%'" },
 	{ key: 'dtgig', noun: "press", query: "select * from press where ?" },
 	{ key: 'datetime', noun: "gigmedia", query: "select * from gigmedia where ?" },
