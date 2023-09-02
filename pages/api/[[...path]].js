@@ -13,6 +13,8 @@ const queries = [
 	{ noun: "performances", query: "select * from performance" },
 	{ noun: "presses", query: "select * from press" },
 	{ noun: "feedbacks", query: "select * from feedback where domain_id=11" },
+	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%'" },
+	{ noun: "lyric", key: 'href', query: "select * from lyrics where {{key}} like '{{value}}%'" },
 
 	// others
 	{ key: 'dtgig', noun: "press", query: "select * from press where ? order by album, dtpublished desc" },
@@ -38,7 +40,6 @@ const queries = [
 	},
 	{ noun: "performance_by_datetime", key: 'datetime', query: "select * from performance where {{key}}='{{value}}'" },
 	{ noun: "gigsong_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}}='{{value}}'" },
-	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%'" },
 	{ key: 'dtgig', noun: "press", query: "select * from press where ?" },
 	{ key: 'datetime', noun: "gigmedia", query: "select * from gigmedia where ?" },
 	{ key: 'datetime', noun: "gigtext", query: "select * from gigtext where ?" },
