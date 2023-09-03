@@ -15,6 +15,7 @@ const queries = [
 	{ noun: "feedbacks", query: "select * from feedback where domain_id=11" },
 	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%'" },
 	{ noun: "lyric", key: 'href', query: "select * from lyrics where {{key}} like '{{value}}%'" },
+	{ noun: "songs_by_release", key: 'found_on', query: "select * from lyrics where {{key}} like '%{{value}}%'" },
 
 	// others
 	{ key: 'dtgig', noun: "press", query: "select * from press where ? order by album, dtpublished desc" },
