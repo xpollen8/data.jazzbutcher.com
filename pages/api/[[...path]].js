@@ -16,7 +16,8 @@ const queries = [
 	{ noun: "presses", query: "select * from press" },
 	{ noun: "feedbacks", query: "select * from feedback where domain_id=11" },
 	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%'" },
-	{ noun: "lyric", key: 'href', query: "select * from lyrics where {{key}} like '{{value}}%'" },
+	{ noun: "lyrics", query: "select * from lyrics" },
+	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where ?" },
 	{ noun: "songs_by_release", key: 'found_on', query: "select * from lyrics where {{key}} like '%{{value}}%'" },
 
 	// others
@@ -62,6 +63,7 @@ const queries = [
 
 const doQuery = async (noun, key, type, value) => {
 	try {
+		console.log("LOOKUP", noun, key, type, value);
 		const obj = queries.find(q => q.noun === noun);
 		if (!obj) {
 			return { noun, key, value, error: 'object not found' }
