@@ -15,8 +15,8 @@ const queries = [
 	{ noun: "gigs_by_song", key: "s.song", query: "select * from gigsong s, gig g where {{key}} like '%{{value}}%' and s.datetime=g.datetime" },
 	{ noun: "presses", query: "select * from press" },
 	{ noun: "feedbacks", query: "select * from feedback where domain_id=11" },
-	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%'" },
-	{ noun: "lyrics", query: "select * from lyrics" },
+	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%' order by dtcreated desc" },
+	{ noun: "lyrics", query: "select * from lyrics order by title" },
 	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where ?" },
 	{ noun: "songs_by_release", key: 'found_on', query: "select * from lyrics where {{key}} like '%{{value}}%'" },
 
@@ -99,6 +99,7 @@ const doQuery = async (noun, key, type, value) => {
 		} else {
 			Q = mysql.format(sql, [ { [key]: value } ]);
 		}
+		//console.log("Q", Q);
 		const thisResults = await db.query(Q)
 			.then(async results => {
 				//console.log("RES", { key, results });
