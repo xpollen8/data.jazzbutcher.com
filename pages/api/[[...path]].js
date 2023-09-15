@@ -20,6 +20,7 @@ const queries = [
 	{ noun: "lyrics", query: "select * from lyrics order by title" },
 	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where ?" },
 	{ noun: "songs_by_release", key: 'found_on', query: "select * from lyrics where {{key}} like '%{{value}}%'" },
+	{ noun: "credits_by_release", key: 'lookup', query: "select * from performance where ?" },
 	{ noun: "songs_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}} like '%{{value}}%'" },
 
 	// others
