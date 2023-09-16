@@ -22,6 +22,7 @@ const queries = [
 	{ noun: "songs_by_release", query: "select p.ordinal, p.lookup, l.title, p.performer, p.instruments from lyrics l left join performance p on locate(p.lookup, l.found_on) and l.title = p.song where l.found_on like '%{{value}}%' and (p.lookup = '{{value}}' or p.lookup IS NULL) order by p.ordinal" },
 	{ noun: "credits_by_release", query: "select * from performance where lookup='{{value}}' and song IS NULL" },
 	{ noun: "songs_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}} like '%{{value}}%'" },
+	{ noun: "presses_by_release", key: 'album', query: "select * from press where ? order by dtpublished" },
 
 	// others
 	{ key: 'dtgig', noun: "press", query: "select * from press where ? order by album, dtpublished desc" },
@@ -58,7 +59,6 @@ const queries = [
 	{ noun: "gigs_with_feedback", query: "select distinct(uri) from feedback where uri like 'gigs/%' order by uri desc" },
 	{ noun: "gigs_with_video", query: "select gig_id, datetime, venue, address, city, state, postalcode, country, extra, blurb, title from gig where find_in_set('video', extra) and isdeleted IS NULL order by datetime desc" },
 	{ key: 'lookup', noun: "album_personnel", query: "select * from performance where {{key}}='{{value}}'" },
-	{ key: 'album', noun: "album_press", query: "select * from press where {{key}}='{{value}}' order by dtpublished" },
 	{ noun: "gigs_with_audio", query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL group by g.datetime order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
 	{ noun: "audio_by_project", key: 'g.extra', query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL and {{key}} like '%{{value}}%' group by g.datetime order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
 	{ key: 'song', noun: "live_performances_by_song", query: 'select count(*) as cnt from gigsong where {{key}}="{{value}}"' },
