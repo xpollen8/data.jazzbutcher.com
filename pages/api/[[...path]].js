@@ -19,8 +19,8 @@ const queries = [
 	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%' order by dtcreated desc" },
 	{ noun: "lyrics", query: "select * from lyrics order by title" },
 	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where ?" },
-	{ noun: "songs_by_release", key: 'found_on', query: "select * from lyrics where {{key}} like '%{{value}}%'" },
-	{ noun: "credits_by_release", key: 'lookup', query: "select * from performance where ?" },
+	{ noun: "songs_by_release", query: "select distinct(l.title), p.performer, p.instruments from lyrics l left join performance p on locate(p.lookup, l.found_on) and l.title = p.song where l.found_on like '%{{value}}%' order by p.ordinal" },
+	{ noun: "credits_by_release", query: "select * from performance where lookup='{{value}}' and song IS NULL" },
 	{ noun: "songs_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}} like '%{{value}}%'" },
 
 	// others
@@ -67,7 +67,7 @@ const queries = [
 
 const doQuery = async (noun, key, type, value) => {
 	try {
-		console.log("LOOKUP", noun, key, type, value);
+		//console.log("LOOKUP", noun, key, type, value);
 		const obj = queries.find(q => q.noun === noun);
 		if (!obj) {
 			return { noun, key, value, error: 'object not found' }
@@ -103,7 +103,7 @@ const doQuery = async (noun, key, type, value) => {
 		} else {
 			Q = mysql.format(sql, [ { [key]: value } ]);
 		}
-		console.log("Q", Q);
+		//console.log("Q", Q);
 		const thisResults = await db.query(Q)
 			.then(async results => {
 				//console.log("RES", { key, results });
