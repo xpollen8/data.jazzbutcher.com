@@ -19,7 +19,7 @@ const queries = [
 	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%' order by dtcreated desc" },
 	{ noun: "lyrics", query: "select * from lyrics order by title" },
 	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where ?" },
-	{ noun: "songs_by_release", query: "select distinct(l.title), p.performer, p.instruments from lyrics l left join performance p on locate(p.lookup, l.found_on) and l.title = p.song where l.found_on like '%{{value}}%' order by p.ordinal" },
+	{ noun: "songs_by_release", query: "select p.ordinal, p.lookup, l.title, p.performer, p.instruments from lyrics l left join performance p on locate(p.lookup, l.found_on) and l.title = p.song where l.found_on like '%{{value}}%' and (p.lookup = '{{value}}' or p.lookup IS NULL) order by p.ordinal" },
 	{ noun: "credits_by_release", query: "select * from performance where lookup='{{value}}' and song IS NULL" },
 	{ noun: "songs_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}} like '%{{value}}%'" },
 
@@ -82,7 +82,7 @@ const doQuery = async (noun, key, type, value) => {
 		}
 		*/
 		if (sql.indexOf(`{{key}}`) > 0) {
-			sql = sql.replace('{{key}}', key);
+			sql = sql.replace(/{{key}}/g, key);
 		}
 		if (sql.indexOf(`{{value}}`) > 0) {
 			if (value) {
@@ -91,7 +91,7 @@ const doQuery = async (noun, key, type, value) => {
 				} else {
 					value = JSON.parse(JSON.stringify(value));
 				}
-				sql = sql.replace('{{value}}', value);
+				sql = sql.replace(/{{value}}/g, value);
 			} else {
 				return { noun, key, value, error: "ID REQUIRED" };
 			}
