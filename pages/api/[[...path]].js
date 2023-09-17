@@ -23,6 +23,7 @@ const queries = [
 	{ noun: "credits_by_release", query: "select * from performance where lookup='{{value}}' and song IS NULL" },
 	{ noun: "songs_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}} like '%{{value}}%'" },
 	{ noun: "presses_by_release", key: 'album', query: "select * from press where ? order by dtpublished" },
+	{ noun: "press_by_href", key: 'url', query: "select * from press where {{key}} like '/press/{{value}}%'" },
 
 	// others
 	{ key: 'dtgig', noun: "press", query: "select * from press where ? order by album, dtpublished desc" },
