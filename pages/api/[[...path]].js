@@ -20,7 +20,7 @@ const queries = [
 	{ noun: "lyrics", query: "select * from lyrics order by title" },
 	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where {{key}} like '{{value}}%'" },
 	//{ noun: "songs_by_release", query: "select p.version, p.media, p.type, p.variant, p.author, p.ordinal, p.lookup, l.title, p.performer, p.instruments from lyrics l left join performance p on locate(p.lookup, l.found_on) and l.title = p.song where l.found_on like '%{{value}}%' and (p.lookup = '{{value}}' or p.lookup IS NULL) and length(p.performer) = 0 order by type, p.ordinal" },
-	{ noun: "songs_by_release", query: "select *, song as title from performance where lookup = '{{value}}' order by type, ordinal" },
+	{ noun: "songs_by_release", query: "select *, song as title from performance where lookup = '{{value}}' and length(performer) = 0 order by type, ordinal" },
 	{ noun: "credits_by_release", query: "select * from performance where lookup='{{value}}' and length(performer) > 0" },
 	{ noun: "songs_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}} like '%{{value}}%'" },
 	{ noun: "presses_by_release", key: 'album', query: "select url, type, person, dtadded, dtpublished, dtgig, todo, album, thumb, images, media, publication, location, title, headline, subhead, summary, source, credit from press where ? order by dtpublished" },
