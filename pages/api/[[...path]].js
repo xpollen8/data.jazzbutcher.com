@@ -62,7 +62,7 @@ const queries = [
 	{ noun: "gigs_with_feedback", query: "select distinct(uri) from feedback where uri like 'gigs/%' order by uri desc" },
 	{ noun: "gigs_with_video", query: "select gig_id, datetime, venue, address, city, state, postalcode, country, extra, blurb, title from gig where find_in_set('video', extra) and isdeleted IS NULL order by datetime desc" },
 	{ key: 'lookup', noun: "album_personnel", query: "select * from performance where {{key}}='{{value}}'" },
-	{ noun: "gigs_with_audio", query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL group by g.datetime order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
+	{ noun: "gigs_with_audio", query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
 	{ noun: "audio_by_project", key: 'g.extra', query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL and {{key}} like '%{{value}}%' group by g.datetime order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
 	{ key: 'song', noun: "live_performances_by_song", query: 'select count(*) as cnt from gigsong where {{key}}="{{value}}"' },
 	{ key: 'song', noun: "live_performances_with_media_by_song", query: 'select count(*) as cnt from gigsong where {{key}}="{{value}}" and length(mediaurl) > 0' },
