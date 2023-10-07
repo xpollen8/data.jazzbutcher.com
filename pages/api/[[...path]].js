@@ -32,6 +32,8 @@ const queries = [
 	{ key: 'dtgig', noun: "press", query: "select * from press where ? order by album, dtpublished desc" },
 	{ key: 'person', noun: "interviews_by_person", query: "select * from press where type like '%interview%' and {{key}}='{{value}}' order by dtpublished desc" },
 	{ noun: "posters", query: "select datetime from gig where extra like '%poster%' and isdeleted IS NULL order by datetime desc" },
+	{ noun: "prevgig", query: "select datetime from gig where datetime < '{{value}}' order by datetime desc limit 1" },
+	{ noun: "nextgig", query: "select datetime from gig where datetime > '{{value}}' order by datetime limit 1" },
 	{ noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
 	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where datetime = '{{value}}'" },
 	{ noun: 'gig_by_datetime', key: 'datetime', query: "select *, CAST(datetime as CHAR) as datetime from gig where {{key}}='{{value}}' AND isdeleted IS NULL", joins: [
@@ -40,6 +42,8 @@ const queries = [
 			{ name: 'text', key: 'datetime', noun: 'gigtext' },
 			{ name: 'players', key: 'datetime', noun: 'performance' },
 			{ name: 'press', key: 'datetime', noun: 'press' },
+			{ name: 'next', key: 'datetime', noun: 'nextgig' },
+			{ name: 'prev', key: 'datetime', noun: 'prevgig' },
 		]
 	},
 	{ noun: 'gig', key: 'gig_id', query: "select * from gig where {{key}}={{value}} AND isdeleted IS NULL", joins: [
