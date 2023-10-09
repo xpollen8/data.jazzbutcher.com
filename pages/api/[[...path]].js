@@ -20,8 +20,8 @@ const queries = [
 	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%' order by dtcreated desc" },
 	{ noun: "lyrics", query: "select * from lyrics order by title" },
 	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where {{key}} like '{{value}}%'" },
-	{ noun: "release_audio_by_project", key: 'project', query: "select * from performance where project='{{value}}' and category='release' and media <> 'NULL' group by lookup, song order by lookup, ordinal" },
-	{ noun: "releases_by_song", query: 'select distinct(lookup), media, version from performance where song="{{value}}" and category="release"' },
+	{ noun: "release_audio_by_project", key: 'project', query: "select * from performance where ? and category='release' and media <> 'NULL' group by lookup, song order by lookup, ordinal" },
+	{ noun: "releases_by_song", key: 'song', query: 'select distinct(lookup), media, version from performance where ? and category="release"' },
 	{ noun: "songs_by_release", query: 'select *, song as title from performance where lookup = "{{value}}" and length(performer) = 0 order by type, ordinal' },
 	{ noun: "credits_by_release", query: 'select * from performance where lookup="{{value}}" and length(performer) > 0' },
 	{ noun: "songs_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}} like '%{{value}}%'" },
@@ -36,7 +36,7 @@ const queries = [
 	{ noun: "nextgig", query: "select datetime from gig where datetime > '{{value}}' order by datetime limit 1" },
 	{ noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
 	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where datetime = '{{value}}'" },
-	{ noun: 'gig_by_datetime', key: 'datetime', query: "select *, CAST(datetime as CHAR) as datetime from gig where {{key}}='{{value}}' AND isdeleted IS NULL", joins: [
+	{ noun: 'gig_by_datetime', key: 'datetime', query: "select *, CAST(datetime as CHAR) as datetime from gig where ? AND isdeleted IS NULL", joins: [
 			{ name: 'played', key: 'datetime', noun: 'gigsong' },
 			{ name: 'media', key: 'datetime', noun: 'gigmedia' },
 			{ name: 'text', key: 'datetime', noun: 'gigtext' },
@@ -54,8 +54,8 @@ const queries = [
 			{ name: 'press', key: 'datetime', noun: 'press' },
 		]
 	},
-	{ noun: "performance_by_datetime", key: 'datetime', query: "select * from performance where {{key}}='{{value}}'" },
-	{ noun: "gigsong_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}}='{{value}}'" },
+	{ noun: "performance_by_datetime", key: 'datetime', query: "select * from performance where ?" },
+	{ noun: "gigsong_by_datetime", key: 'datetime', query: "select * from gigsong where ?" },
 	{ key: 'dtgig', noun: "press", query: "select * from press where ?" },
 	{ key: 'datetime', noun: "gigmedia", query: "select * from gigmedia where ?" },
 	{ key: 'datetime', noun: "gigtext", query: "select * from gigtext where ?" },
@@ -66,7 +66,7 @@ const queries = [
 	{ noun: "gigs_and_year_by_id", query: "select *, year(datetime) as year from gig where find_in_set('{{id}}', extra) and isdeleted IS NULL order by datetime desc" },
 	{ noun: "gigs_with_feedback", query: "select distinct(uri) from feedback where uri like 'gigs/%' order by uri desc" },
 	{ noun: "gigs_with_video", query: "select gig_id, datetime, venue, address, city, state, postalcode, country, extra, blurb, title from gig where find_in_set('video', extra) and isdeleted IS NULL order by datetime desc" },
-	{ key: 'lookup', noun: "album_personnel", query: "select * from performance where {{key}}='{{value}}'" },
+	{ key: 'lookup', noun: "album_personnel", query: "select * from performance where ?" },
 	{ noun: "gigs_with_audio", query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
 	{ noun: "audio_by_project", key: 'g.extra', query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL and {{key}} like '%{{value}}%' group by g.datetime order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
 	{ key: 'song', noun: "live_performances_by_song", query: 'select count(*) as cnt from gigsong where {{key}}="{{value}}"' },
@@ -111,7 +111,7 @@ const doQuery = async (noun, key, type, value) => {
 		} else {
 			Q = mysql.format(sql, [ { [key]: value } ]);
 		}
-		//console.log("Q", Q);
+		console.log("Q", Q);
 		const thisResults = await db.query(Q)
 			.then(async results => {
 				//console.log("RES", { key, results });
