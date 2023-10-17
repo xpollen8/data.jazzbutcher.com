@@ -21,7 +21,7 @@ const queries = [
 	{ noun: "lyrics", query: "select * from lyrics order by title" },
 	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where {{key}} like '{{value}}%'" },
 	{ noun: "release_audio_by_project", key: 'project', query: "select * from performance where ? and category='release' and media <> 'NULL' group by lookup, song order by lookup, ordinal" },
-	{ noun: "releases_by_song", key: 'song', query: 'select distinct(lookup), media as mediaurl, version from performance where ? and category="release"' },
+	{ noun: "releases_by_song", key: 'song', query: 'select distinct(lookup), media, version from performance where ? and category="release"' },
 	{ noun: "songs_by_release", query: 'select *, song as title from performance where lookup = "{{value}}" and length(performer) = 0 order by type, ordinal' },
 	{ noun: "credits_by_release", query: 'select * from performance where lookup="{{value}}" and length(performer) > 0' },
 	{ noun: "songs_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}} like '%{{value}}%'" },
