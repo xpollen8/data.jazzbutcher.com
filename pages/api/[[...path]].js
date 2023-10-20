@@ -17,10 +17,10 @@ const queries = [
 	{ noun: "presses_for_admin", query: "select * from press" },
 	{ noun: "medias", query: "select * from media" },
 	{ noun: "feedbacks", query: "select * from feedback where domain_id=11" },
-	{ noun: "feedback", query: "select * from feedback where domain_id=11 and uri like '{{value}}%' order by dtcreated desc" },
+	{ noun: "feedback", query: 'select * from feedback where domain_id=11 and uri like "{{value}}%" order by dtcreated desc' },
 	{ noun: "lyrics", query: "select * from lyrics order by title" },
 	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where {{key}} like '{{value}}%'" },
-	{ noun: "video", "select * from media where type='video' order by project, collection, ordinal" },
+	{ noun: "video", query: "select * from media where type='video' order by project, collection, ordinal" },
 	{ noun: "release_video_by_project", key: 'project', query: "select * from media where ? and type='video' order by collection, ordinal" },
 	{ noun: "live_video_by_project", key: 'project', query: "select * from media where ? and type='video' and datetime <> '0000-00-00 00:00:00' order by collection, ordinal" },
 	{ noun: "release_audio_by_project", key: 'project', query: "select * from performance where ? and category='release' and media <> 'NULL' group by lookup, song order by lookup, ordinal" },
@@ -114,7 +114,7 @@ const doQuery = async (noun, key, type, value) => {
 		} else {
 			Q = mysql.format(sql, [ { [key]: value } ]);
 		}
-		console.log("Q", Q);
+		//console.log("Q", Q);
 		const thisResults = await db.query(Q)
 			.then(async results => {
 				//console.log("RES", { key, results });
