@@ -11,7 +11,7 @@ const queries = [
 	{ noun: "gigtexts", query: "select * from gigtext" },
 	{ noun: "gigmedias", query: "select * from gigmedia" },
 	{ noun: "performances", query: "select * from performance" },
-	{ noun: "gigs_by_musician", key: "p.performer", query: 'select * from performance p, gig g where {{key}} like "[[person:{{value}}%" and p.datetime=g.datetime' },
+	{ noun: "gigs_by_musician", key: "p.performer", query: 'select * from performance p, gig g where {{key}} like "[[person:%{{value}}%" and p.datetime=g.datetime' },
 	{ noun: "gigs_by_song", key: "s.song", query: 'select * from gigsong s, gig g where {{key}} like "%{{value}}%" and s.datetime=g.datetime' },
 	{ noun: "presses", query: "select url, type, person, dtadded, dtpublished, dtgig, todo, album, thumb, images, media, publication, location, title, headline, subhead, summary, source, credit, LENGTH(body) - LENGTH(REPLACE(body, ' ', '')) as bodycount from press" },
 	{ noun: "presses_for_admin", query: "select * from press" },
