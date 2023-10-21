@@ -40,6 +40,7 @@ const queries = [
 	{ noun: "nextgig", query: "select datetime from gig where datetime > '{{value}}' order by datetime limit 1" },
 	{ noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
 	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where datetime = '{{value}}'" },
+	{ noun: "media_by_song", key: 'name', query: "select * from media where ?" },
 	{ noun: 'gig_by_datetime', key: 'datetime', query: "select *, CAST(datetime as CHAR) as datetime from gig where ? AND isdeleted IS NULL", joins: [
 			{ name: 'played', key: 'datetime', noun: 'gigsong' },
 			{ name: 'media', key: 'datetime', noun: 'gigmedia' },
