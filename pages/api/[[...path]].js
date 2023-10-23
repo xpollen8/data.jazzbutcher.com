@@ -17,7 +17,7 @@ const queries = [
 	{ noun: "presses_for_admin", query: "select * from press" },
 	{ noun: "medias", query: "select * from media" },
 	{ noun: "feedbacks", query: "select * from feedback where domain_id=11" },
-	{ noun: "feedback", key: 'uri', query: 'select * from feedback where domain_id=11 and ?" order by dtcreated desc' },
+	{ noun: "feedback", query: 'select * from feedback where domain_id=11 and uri = "{{value}}" order by dtcreated desc' },
 	{ noun: "lyrics", query: "select * from lyrics order by title" },
 	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where {{key}} like '{{value}}%'" },
 	{ noun: "audio", query: "select * from media where type='audio' order by project, collection, ordinal" },
