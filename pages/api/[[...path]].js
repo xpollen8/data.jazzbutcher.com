@@ -180,6 +180,7 @@ const handler = async (req, res) => {
 		}
 		//console.log("DB", db, process.env['JBC_MYSQL_HOST']);
 		const { path = [] } = req.query;
+		const method = req.method;
 		let [ noun, key, type, value ] = path;
 		if (key === 'exact') {	// will override path-based queries
 			value = path.slice(2).join('/'); // [ 'feedback', 'exact', 'lyrics', 'sea_madness.html' ] -> 'lyrics/sea_madness.html'
@@ -191,10 +192,45 @@ const handler = async (req, res) => {
 			value = type;
 			type  = 'is';
 		}
-		//console.log("QUERY", { noun, key, type, value });
-		const ret = await doQuery(noun, key, type, value);
-		//console.log("OUTPUT", JSON.stringify(ret, null, 4));
-		res.json(ret);
+		if (method === 'GET')  {
+			//console.log("QUERY", { noun, key, type, value });
+			const ret = await doQuery(noun, key, type, value);
+			//console.log("OUTPUT", JSON.stringify(ret, null, 4));
+			res.json(ret);
+		} else {
+			const { feedback_id, uri, subject, who, whence, comments } = req.body;
+			console.log("POST", { path, noun, key, type, value, body: req.body });
+			switch (noun) {
+				case 'feedback_by_page_new': {
+					const [ rows, fields ] = await db.query('insert IGNORE into `feedback` set `feedback_id` = NULL, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
+						[
+							`${uri}.html`,
+							subject,
+							who || 'No Email Given',
+							whence || 'No Location Given',
+							comments
+						]);
+					return res.json([ rows, fields ]);
+				}
+				break;
+				case 'feedback_by_page_reply': {
+					if (!feedback_id) { return res.json({ error: 'missing: feedback_id' }); }
+					const [ rows, fields ] = await db.query('insert IGNORE into `feedback` set `feedback_id` = NULL, `parent_id` = ?, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
+						[
+							feedback_id,
+							`${uri}.html`,
+							subject,
+							who || 'No Email Given',
+							whence || 'No Location Given',
+							comments
+						]);
+					return res.json([ rows, fields ]);
+				}
+				break;
+				default:
+					return res.json({ error: `unknown: ${noun}` });
+			}
+		}
 	} catch (e) {
 		console.log("ERROR", e);
 		res.status(400).send(e);
