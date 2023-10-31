@@ -13,7 +13,7 @@ const queries = [
 	{ noun: "performances", query: "select * from performance" },
 	{ noun: "gigs_by_musician", key: "p.performer", query: 'select * from performance p, gig g where {{key}} like "[[person:%{{value}}%" and p.datetime=g.datetime' },
 	{ noun: "gigs_by_song", key: "s.song", query: 'select * from gigsong s, gig g where {{key}} like "%{{value}}%" and s.datetime=g.datetime' },
-	{ noun: "presses", query: "select url, type, person, dtadded, dtpublished, dtgig, todo, album, thumb, images, media, publication, location, title, headline, subhead, summary, source, credit, LENGTH(body) - LENGTH(REPLACE(body, ' ', '')) as bodycount from press" },
+	{ noun: "presses", query: "select url, type, person, dtadded, dtpublished, dtgig, todo, album, thumb, images, audio, media, publication, location, title, headline, subhead, summary, source, credit, LENGTH(body) - LENGTH(REPLACE(body, ' ', '')) as bodycount from press" },
 	{ noun: "presses_for_admin", query: "select * from press" },
 	{ noun: "medias", query: "select * from media" },
 	{ noun: "feedbacks", query: "select * from feedback where domain_id=11" },
@@ -197,13 +197,18 @@ const handler = async (req, res) => {
 			const ret = await doQuery(noun, key, type, value);
 			//console.log("OUTPUT", JSON.stringify(ret, null, 4));
 			res.json(ret);
+		} else if (method === 'DELETE')  {
+			// TODO - allow to delete own comments (session)
+			res.json({ error: 'DELETE not implemented' });
 		} else {
-			const { feedback_id, uri, subject, who, whence, comments } = req.body;
-			console.log("POST", { path, noun, key, type, value, body: req.body });
+			const { session, host, feedback_id, uri, subject, who, whence, comments } = req.body;
+			console.log("POST", { session, host, path, noun, key, type, value, body: req.body });
 			switch (noun) {
 				case 'feedback_by_page_new': {
-					const [ rows, fields ] = await db.query('insert IGNORE into `feedback` set `feedback_id` = NULL, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
+					const [ rows, fields ] = await db.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
 						[
+							session,
+							host,
 							`${uri}.html`,
 							subject,
 							who || 'No Email Given',
@@ -215,8 +220,10 @@ const handler = async (req, res) => {
 				break;
 				case 'feedback_by_page_reply': {
 					if (!feedback_id) { return res.json({ error: 'missing: feedback_id' }); }
-					const [ rows, fields ] = await db.query('insert IGNORE into `feedback` set `feedback_id` = NULL, `parent_id` = ?, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
+					const [ rows, fields ] = await db.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `parent_id` = ?, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
 						[
+							session,
+							host,
 							feedback_id,
 							`${uri}.html`,
 							subject,
