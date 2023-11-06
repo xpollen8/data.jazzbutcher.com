@@ -41,8 +41,8 @@ const queries = [
 	{ noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
 	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where datetime = '{{value}}'" },
 	{ noun: "recent_press", query: "select * from press where dtadded > now() - interval 1 year order by dtadded desc" },
-	{ noun: "recent_media", query: "select * from media where dtcreated > now() - interval 1 year order by dtcreated desc" },
-	{ noun: "recent_feedback", query: "select * from feedback where dtcreated > now() - interval 1 year order by dtcreated desc" },
+	{ noun: "recent_media", query: "select * from media where dtcreated > now() - interval 1 month order by dtcreated desc" },
+	{ noun: "recent_feedback", query: "select * from feedback where dtcreated > now() - interval 1 month order by dtcreated desc" },
 	{ noun: "media_by_song", key: 'name', query: "select * from media where ?" },
 	{ noun: 'gig_by_datetime', key: 'datetime', query: "select *, CAST(datetime as CHAR) as datetime from gig where ? AND isdeleted IS NULL", joins: [
 			{ name: 'played', key: 'datetime', noun: 'gigsong' },
