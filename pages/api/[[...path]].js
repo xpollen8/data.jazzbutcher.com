@@ -43,6 +43,7 @@ const queries = [
 	{ noun: "recent_press", query: "select * from press where dtadded > now() - interval 1 year order by dtadded desc" },
 	{ noun: "recent_media", query: "select * from media where dtcreated > now() - interval 1 month order by dtcreated desc" },
 	{ noun: "recent_feedback", query: "select * from feedback where dtcreated > now() - interval 1 month order by dtcreated desc" },
+	{ noun: "on_this_day", query: "select * from gig where month(datetime)=month(now()) and day(datetime)=day(now()) order by datetime" },
 	{ noun: "media_by_song", key: 'name', query: "select * from media where ?" },
 	{ noun: 'gig_by_datetime', key: 'datetime', query: "select *, CAST(datetime as CHAR) as datetime from gig where ? AND isdeleted IS NULL", joins: [
 			{ name: 'played', key: 'datetime', noun: 'gigsong' },
