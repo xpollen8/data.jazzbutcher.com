@@ -78,8 +78,8 @@ const queries = [
 	{ key: 'lookup', noun: "album_personnel", query: "select * from performance where ?" },
 	{ noun: "gigs_with_audio", query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
 	{ noun: "audio_by_project", key: 'g.extra', query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL and {{key}} like '%{{value}}%' group by g.datetime order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
-	{ key: 'song', noun: "live_performances_by_song", query: 'select count(*) as cnt from gigsong where {{key}}="{{value}}"' },
-	{ key: 'song', noun: "live_performances_with_media_by_song", query: 'select count(*) as cnt from gigsong where {{key}}="{{value}}" and length(mediaurl) > 0' },
+	{ key: 'song', noun: "live_performances_by_song", query: 'select * from gigsong gs, gig g where gs.datetime=g.datetime and {{key}}="{{value}}"' },
+	{ key: 'song', noun: "live_performances_with_media_by_song", query: 'select * from gigsong where {{key}}="{{value}}" and length(mediaurl) > 0' },
 ];
 
 const doQuery = async (noun, key, type, value) => {
