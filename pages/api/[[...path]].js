@@ -20,6 +20,7 @@ const queries = [
 	{ noun: "feedback", query: 'select * from feedback where domain_id=11 and uri = "{{value}}" order by dtcreated desc' },
 	{ noun: "lyrics", query: "select * from lyrics order by title" },
 	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where {{key}} like '{{value}}%'" },
+	{ noun: "unreleased_audio", query: "select * from media where type='audio' and length(lookup) = 0 and collection like '%session%' order by project, collection, ordinal" },
 	{ noun: "audio", query: "select * from media where type='audio' order by project, collection, ordinal" },
 	{ noun: "video", query: "select * from media where type='video' order by project, collection, ordinal" },
 	{ noun: "release_video_by_project", key: 'project', query: "select * from media where ? and type='video' order by collection, ordinal" },
