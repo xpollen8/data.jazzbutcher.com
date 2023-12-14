@@ -226,17 +226,6 @@ const handler = async (req, res) => {
 					break;
 					case 'feedback_by_page_reply': {
 						if (!feedback_id) { return res.json({ error: 'missing: feedback_id' }); }
-						//console.log("INSERT", 'insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `parent_id` = ?, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
-							[
-								session,
-								host,
-								feedback_id,
-								uri,
-								subject,
-								who || 'No Email Given',
-								whence || 'No Location Given',
-								comments
-								]);
 						const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `parent_id` = ?, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
 							[
 								session,
