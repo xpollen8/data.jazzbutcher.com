@@ -3,6 +3,7 @@ const Db = require('mywrap');
 const mysql = require('mysql2');
 
 let db;
+let db_FEEDBACK;
 
 const queries = [
 	// called by jazzbutcher.com
@@ -170,20 +171,6 @@ const doQuery = async (noun, key, type, value) => {
 
 const handler = async (req, res) => {
 	try {
-		if (!db) {
-			db = await (new Db({
-				host: process.env['JBC_MYSQL_HOST'],
-				username: process.env['JBC_MYSQL_USERNAME'],
-				user: process.env['JBC_MYSQL_USER'],
-				database: process.env['JBC_MYSQL_DATABASE'],
-				password: process.env['JBC_MYSQL_PASSWORD'],
-				waitForConnection: process.env['JBC_MYSQL_WAITFORCONNECTION'],
-				connectionLimit: process.env['JBC_MYSQL_CONNECTIONLIMIT'],
-				queueLimit: process.env['JBC_MYSQL_QUEUELIMIT'],
-				timezone: 'utc',
-			})).start();
-		}
-		//console.log("DB", db, process.env['JBC_MYSQL_HOST']);
 		const { path = [] } = req.query;
 		const method = req.method;
 		let [ noun, key, type, value ] = path;
@@ -197,51 +184,96 @@ const handler = async (req, res) => {
 			value = type;
 			type  = 'is';
 		}
-		if (method === 'GET')  {
+		if (method === 'DELETE' || method === 'POST' || noun === 'feedback_delete')  {
+			if (!db_FEEDBACK) {
+				db_FEEDBACK = await (new Db({
+					host: process.env['JBC_MYSQL_HOST'],
+					username: process.env['JBC_MYSQL_USERNAME_FEEDBACK'],
+					user: process.env['JBC_MYSQL_USER_FEEDBACK'],
+					database: process.env['JBC_MYSQL_DATABASE'],
+					password: process.env['JBC_MYSQL_PASSWORD_FEEDBACK'],
+					waitForConnection: process.env['JBC_MYSQL_WAITFORCONNECTION'],
+					connectionLimit: process.env['JBC_MYSQL_CONNECTIONLIMIT'],
+					queueLimit: process.env['JBC_MYSQL_QUEUELIMIT'],
+					timezone: 'utc',
+				})).start();
+			}
+			if (noun === 'feedback_delete')  {
+				const resX = await db_FEEDBACK.query('update feedback set isdeleted = ? where domain_id=11 and feedback_id = ?',
+					[
+						"T",
+						value,
+					]);
+				//console.log("RES", resX);
+				res.json(resX);
+			} else {
+				const { session, host, feedback_id, uri, subject, who, whence, comments } = req.body;
+				//console.log("POST", { session, host, path, noun, key, type, value, body: req.body });
+				switch (noun) {
+					case 'feedback_by_page_new': {
+						const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
+							[
+								session,
+								host,
+								uri,
+								subject,
+								who || 'No Email Given',
+								whence || 'No Location Given',
+								comments
+							]);
+						return res.json(resX);
+					}
+					break;
+					case 'feedback_by_page_reply': {
+						if (!feedback_id) { return res.json({ error: 'missing: feedback_id' }); }
+						//console.log("INSERT", 'insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `parent_id` = ?, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
+							[
+								session,
+								host,
+								feedback_id,
+								uri,
+								subject,
+								who || 'No Email Given',
+								whence || 'No Location Given',
+								comments
+								]);
+						const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `parent_id` = ?, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
+							[
+								session,
+								host,
+								feedback_id,
+								uri,
+								subject,
+								who || 'No Email Given',
+								whence || 'No Location Given',
+								comments
+							]);
+						//console.log("XX", resX);
+						return res.json(resX);
+					}
+					break;
+					default:
+						return res.json({ error: `unknown: ${noun}` });
+				}
+			}
+		} else if (method === 'GET')  {
+			if (!db) {
+				db = await (new Db({
+					host: process.env['JBC_MYSQL_HOST'],
+					username: process.env['JBC_MYSQL_USERNAME'],
+					user: process.env['JBC_MYSQL_USER'],
+					database: process.env['JBC_MYSQL_DATABASE'],
+					password: process.env['JBC_MYSQL_PASSWORD'],
+					waitForConnection: process.env['JBC_MYSQL_WAITFORCONNECTION'],
+					connectionLimit: process.env['JBC_MYSQL_CONNECTIONLIMIT'],
+					queueLimit: process.env['JBC_MYSQL_QUEUELIMIT'],
+					timezone: 'utc',
+				})).start();
+			}
 			//console.log("QUERY", { noun, key, type, value });
 			const ret = await doQuery(noun, key, type, value);
 			//console.log("OUTPUT", JSON.stringify(ret, null, 4));
 			res.json(ret);
-		} else if (method === 'DELETE')  {
-			// TODO - allow to delete own comments (session)
-			res.json({ error: 'DELETE not implemented' });
-		} else {
-			const { session, host, feedback_id, uri, subject, who, whence, comments } = req.body;
-			console.log("POST", { session, host, path, noun, key, type, value, body: req.body });
-			switch (noun) {
-				case 'feedback_by_page_new': {
-					const [ rows, fields ] = await db.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
-						[
-							session,
-							host,
-							`${uri}.html`,
-							subject,
-							who || 'No Email Given',
-							whence || 'No Location Given',
-							comments
-						]);
-					return res.json([ rows, fields ]);
-				}
-				break;
-				case 'feedback_by_page_reply': {
-					if (!feedback_id) { return res.json({ error: 'missing: feedback_id' }); }
-					const [ rows, fields ] = await db.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `parent_id` = ?, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
-						[
-							session,
-							host,
-							feedback_id,
-							`${uri}.html`,
-							subject,
-							who || 'No Email Given',
-							whence || 'No Location Given',
-							comments
-						]);
-					return res.json([ rows, fields ]);
-				}
-				break;
-				default:
-					return res.json({ error: `unknown: ${noun}` });
-			}
 		}
 	} catch (e) {
 		console.log("ERROR", e);
