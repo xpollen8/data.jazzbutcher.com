@@ -8,7 +8,7 @@ let db_FEEDBACK;
 const queries = [
 	// called by jazzbutcher.com
 	{ noun: "gigs", query: "select * from gig where isdeleted IS NULL" },
-	{ noun: "gigsongs", query: "select * from gigsong" },
+	{ noun: "gigsongs", query: "select * from gigsong order by datetime, type, setnum, ordinal" },
 	{ noun: "gigtexts", query: "select * from gigtext" },
 	{ noun: "gigmedias", query: "select * from gigmedia" },
 	{ noun: "performances", query: "select * from performance" },
@@ -70,7 +70,7 @@ const queries = [
 	{ key: 'dtgig', noun: "press", query: "select * from press where ?" },
 	{ key: 'datetime', noun: "gigmedia", query: "select * from gigmedia where ?" },
 	{ key: 'datetime', noun: "gigtext", query: "select * from gigtext where ?" },
-	{ key: 'datetime', noun: "gigsong", query: "select * from gigsong where ?" },
+	{ key: 'datetime', noun: "gigsong", query: "select * from gigsong where ? order by type, setnum, ordinal" },
 	{ key: 'datetime', noun: "performance", query: "select * from performance where ?" },
 	{ noun: "gigs_and_year", query: "select *, year(datetime) as year from gig where isdeleted IS NULL order by datetime desc" },
 	{ key: 'venue', noun: "gigs_by_venue", query: 'select *, year(datetime) as year from gig where isdeleted IS NULL and {{key}} like "%{{value}}%" and isdeleted IS NULL order by datetime desc' },
@@ -82,7 +82,7 @@ const queries = [
 	{ noun: "audio_by_project", key: 'g.extra', query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL and {{key}} like '%{{value}}%' group by g.datetime order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
 	{ key: 'song', noun: "live_performances_by_song", query: 'select * from gigsong gs, gig g where gs.datetime=g.datetime and {{key}}="{{value}}"' },
 	{ key: 'song', key: 'song', noun: "performances_by_song", query: 'select * from performance where {{key}}="{{value}}" and media <> "NULL"' },
-	{ key: 'song', noun: "live_performances_with_media_by_song", query: 'select * from gigsong where {{key}}="{{value}}" and length(mediaurl) > 0' },
+	{ key: 'song', noun: "live_performances_with_media_by_song", query: 'select * from gigsong where {{key}}="{{value}}" and length(mediaurl) > 0 order by type, setnum, ordinal' },
 ];
 
 const doQuery = async (noun, key, type, value) => {
