@@ -66,7 +66,7 @@ const queries = [
 		]
 	},
 	{ noun: "performance_by_datetime", key: 'datetime', query: "select * from performance where ?" },
-	{ noun: "gigsong_by_datetime", key: 'datetime', query: "select * from gigsong where ?" },
+	{ noun: "gigsong_by_datetime", key: 'datetime', query: "select * from gigsong where ? order by type, setnum, ordinal" },
 	{ key: 'dtgig', noun: "press", query: "select * from press where ?" },
 	{ key: 'datetime', noun: "gigmedia", query: "select * from gigmedia where ?" },
 	{ key: 'datetime', noun: "gigtext", query: "select * from gigtext where ?" },
