@@ -17,8 +17,8 @@ const queries = [
 	{ noun: "presses", query: "select url, type, person, dtadded, dtpublished, dtgig, todo, album, thumb, images, audio, media, publication, location, title, headline, subhead, summary, source, credit, LENGTH(body) - LENGTH(REPLACE(body, ' ', '')) as bodycount from press" },
 	{ noun: "presses_for_admin", query: "select * from press" },
 	{ noun: "medias", query: "select * from media" },
-	{ noun: "feedbacks", query: "select * from feedback where domain_id=11 and isdeleted <> 'T'" },
-	{ noun: "feedback", query: 'select * from feedback where domain_id=11 and isdeleted <> "T" and uri = "{{value}}" order by dtcreated desc' },
+	{ noun: "feedbacks", query: "select * from feedback where isdeleted <> 'T'" },
+	{ noun: "feedback", query: 'select * from feedback where isdeleted <> "T" and uri = "{{value}}" order by dtcreated desc' },
 	{ noun: "lyrics", query: "select * from lyrics order by title" },
 	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where {{key}} like '{{value}}%'" },
 	{ noun: "unreleased_audio", query: "select * from media where type='audio' and length(lookup) = 0 and collection like '%session%' order by project, collection, ordinal" },
@@ -44,7 +44,7 @@ const queries = [
 	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where datetime = '{{value}}'" },
 	{ noun: "recent_press", query: "select * from press where dtadded > now() - interval 1 year order by dtadded desc" },
 	{ noun: "recent_media", query: "select * from media where dtcreated > now() - interval 1 month order by dtcreated desc" },
-	{ noun: "recent_feedback", query: "select * from feedback where domain_id=11 and dtcreated > now() - interval 1 month and isdeleted <> 'T' order by dtcreated desc" },
+	{ noun: "recent_feedback", query: "select * from feedback where dtcreated > now() - interval 1 month and isdeleted <> 'T' order by dtcreated desc" },
 	{ noun: "on_this_day", query: "select * from gig where month(datetime)=month(now()) and day(datetime)=day(now()) order by datetime" },
 	{ noun: "media_by_song", key: 'name', query: "select * from media where ?" },
 	{ noun: 'gig_by_datetime', key: 'datetime', query: "select *, CAST(datetime as CHAR) as datetime from gig where ? AND isdeleted IS NULL", joins: [
@@ -75,7 +75,7 @@ const queries = [
 	{ noun: "gigs_and_year", query: "select *, year(datetime) as year from gig where isdeleted IS NULL order by datetime desc" },
 	{ key: 'venue', noun: "gigs_by_venue", query: 'select *, year(datetime) as year from gig where isdeleted IS NULL and {{key}} like "%{{value}}%" and isdeleted IS NULL order by datetime desc' },
 	{ noun: "gigs_and_year_by_id", query: "select *, year(datetime) as year from gig where find_in_set('{{id}}', extra) and isdeleted IS NULL order by datetime desc" },
-	{ noun: "gigs_with_feedback", query: "select distinct(uri) from feedback where domain_id=11 and isdeleted <> 'T' and uri like 'gigs/%' order by uri desc" },
+	{ noun: "gigs_with_feedback", query: "select distinct(uri) from feedback where isdeleted <> 'T' and uri like '%gigs/%' order by uri desc" },
 	{ noun: "gigs_with_video", query: "select gig_id, datetime, venue, address, city, state, postalcode, country, extra, blurb, title from gig where find_in_set('video', extra) and isdeleted IS NULL order by datetime desc" },
 	{ key: 'lookup', noun: "album_personnel", query: "select * from performance where ?" },
 	{ noun: "gigs_with_audio", query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
@@ -176,7 +176,7 @@ const handler = async (req, res) => {
 		const method = req.method;
 		let [ noun, key, type, value ] = path;
 		if (key === 'exact') {	// will override path-based queries
-			value = path.slice(2).join('/'); // [ 'feedback', 'exact', 'lyrics', 'sea_madness.html' ] -> 'lyrics/sea_madness.html'
+			value = '/' + path.slice(2).join('/') || ''; // [ 'feedback', 'exact', 'lyrics', 'sea_madness.html' ] -> 'lyrics/sea_madness.html'
 		} else if (!type) {					// gig/1974
 			value = key;
 			type = 'is';
@@ -200,7 +200,7 @@ const handler = async (req, res) => {
 				})).start();
 			}
 			if (noun === 'feedback_delete')  {
-				const resX = await db_FEEDBACK.query('update feedback set isdeleted = ? where domain_id=11 and feedback_id = ?',
+				const resX = await db_FEEDBACK.query('update feedback set isdeleted = ? where feedback_id = ?',
 					[
 						"T",
 						value,
@@ -212,7 +212,7 @@ const handler = async (req, res) => {
 				//console.log("POST", { session, host, path, noun, key, type, value, body: req.body });
 				switch (noun) {
 					case 'feedback_by_page_new': {
-						const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
+						const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
 							[
 								session,
 								host,
@@ -227,7 +227,7 @@ const handler = async (req, res) => {
 					break;
 					case 'feedback_by_page_reply': {
 						if (!feedback_id) { return res.json({ error: 'missing: feedback_id' }); }
-						const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `parent_id` = ?, `domain_id` = 11, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
+						const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `parent_id` = ?, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
 							[
 								session,
 								host,
