@@ -14,7 +14,7 @@
     "mywrap": "github:xpollen8/mywrap",
     "next": "^15.2.3",
     "react": "19.1.0",
-    "react-dom": "19.0.0",
+    "react-dom": "19.1.0",
     "urlencode": "^2.0.0"
   }
 }
