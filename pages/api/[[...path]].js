@@ -189,14 +189,14 @@ const handler = async (req, res) => {
 			if (!db_FEEDBACK) {
 				db_FEEDBACK = await (new Db({
 					host: process.env['JBC_MYSQL_HOST'],
-					username: process.env['JBC_MYSQL_USERNAME_FEEDBACK'],
+					//username: process.env['JBC_MYSQL_USERNAME_FEEDBACK'],
 					user: process.env['JBC_MYSQL_USER_FEEDBACK'],
 					database: process.env['JBC_MYSQL_DATABASE'],
 					password: process.env['JBC_MYSQL_PASSWORD_FEEDBACK'],
-					waitForConnection: process.env['JBC_MYSQL_WAITFORCONNECTION'],
+					//waitForConnection: process.env['JBC_MYSQL_WAITFORCONNECTION'],
 					connectionLimit: process.env['JBC_MYSQL_CONNECTIONLIMIT'],
 					queueLimit: process.env['JBC_MYSQL_QUEUELIMIT'],
-					timezone: 'utc',
+					//timezone: 'utc',
 				})).start();
 			}
 			if (noun === 'feedback_delete')  {
@@ -250,14 +250,14 @@ const handler = async (req, res) => {
 			if (!db) {
 				db = await (new Db({
 					host: process.env['JBC_MYSQL_HOST'],
-					username: process.env['JBC_MYSQL_USERNAME'],
+					//username: process.env['JBC_MYSQL_USERNAME'],
 					user: process.env['JBC_MYSQL_USER'],
 					database: process.env['JBC_MYSQL_DATABASE'],
 					password: process.env['JBC_MYSQL_PASSWORD'],
-					waitForConnection: process.env['JBC_MYSQL_WAITFORCONNECTION'],
+					//waitForConnection: process.env['JBC_MYSQL_WAITFORCONNECTION'],
 					connectionLimit: process.env['JBC_MYSQL_CONNECTIONLIMIT'],
 					queueLimit: process.env['JBC_MYSQL_QUEUELIMIT'],
-					timezone: 'utc',
+					//timezone: 'utc',
 				})).start();
 			}
 			//console.log("QUERY", { noun, key, type, value });
