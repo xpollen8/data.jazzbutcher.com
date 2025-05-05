@@ -199,14 +199,27 @@ const handler = async (req, res) => {
 					//timezone: 'utc',
 				})).start();
 			}
-			if (noun === 'feedback_delete')  {
+			if (noun === 'gigsong_edit')  {
+				const deletes = [];
+				const inserts = [];
+				const edits = await Promise.all(req.body?.edits?.map(async (e) => {
+					return await db_FEEDBACK.query('update gigsong set ? where gigsong_id = ?',
+						[
+							e,
+							e.gigsong_id,
+						]);
+					})
+				);
+
+				res.json({ edits, deletes, inserts });
+			} else if (noun === 'feedback_delete')  {
 				const resX = await db_FEEDBACK.query('update feedback set isdeleted = ? where feedback_id = ?',
 					[
 						"T",
 						value,
 					]);
 				//console.log("RES", resX);
-				res.json(resX);
+				res.json(rets);
 			} else {
 				const { session, host, feedback_id, uri, subject, who, whence, comments } = req.body;
 				//console.log("POST", { session, host, path, noun, key, type, value, body: req.body });
