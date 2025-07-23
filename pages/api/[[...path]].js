@@ -44,7 +44,7 @@ const queries = [
 	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where datetime = '{{value}}'" },
 	{ noun: "recent_press", query: "select * from press where dtadded > now() - interval 1 year order by dtadded desc" },
 	//{ noun: "recent_media", query: "select * from media where dtcreated > now() - interval 1 month order by dtcreated desc" },
-	{ noun: "recent_media", query: "select * from gigsong where added > now() - interval 3 month order by added desc" },
+	{ noun: "recent_media", query: "select g.*, gs.* from gigsong gs, gig g where gs.added > now() - interval 3 month and gs.datetime=g.datetime order by added desc" },
 	{ noun: "recent_feedback", query: "select * from feedback where dtcreated > now() - interval 1 month and isdeleted <> 'T' order by dtcreated desc" },
 	{ noun: "on_this_day", query: "select * from gig where month(datetime)=month(now()) and day(datetime)=day(now()) order by datetime" },
 	{ noun: "media_by_song", key: 'name', query: "select * from media where ?" },
