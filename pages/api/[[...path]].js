@@ -32,7 +32,7 @@ const queries = [
 	{ noun: "credits_by_release", query: 'select * from performance where lookup="{{value}}" and length(performer) > 0' },
 	{ noun: "songs_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}} like '%{{value}}%'" },
 	{ noun: "presses_by_release", key: 'album', query: "select url, type, person, dtadded, dtpublished, dtgig, todo, album, thumb, images, media, publication, location, title, headline, subhead, summary, source, credit from press where ? order by dtpublished" },
-	{ noun: "press_by_href", key: 'url', query: 'select * from press where {{key}} like "/press/{{value}}%"' },
+	{ noun: "press_by_href", key: 'url', query: 'select * from press where {{key}} = "/press/{{value}}.html" or {{key}} = "/press/{{value}}"' },
 
 	// others
 	{ key: 'dtgig', noun: "press", query: "select * from press where ? order by album, dtpublished desc" },
