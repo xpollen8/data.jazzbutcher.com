@@ -46,7 +46,7 @@ const queries = [
 	{ noun: "recent_gigmedia", query: "select * from gigmedia  where credit_date > now() - interval 3 month order by type, credit_date desc" },
 	//{ noun: "recent_media", query: "select * from media where dtcreated > now() - interval 1 month order by dtcreated desc" },
 	{ noun: "recent_media", query: "select g.*, gs.* from gigsong gs, gig g where gs.added > now() - interval 3 month and gs.datetime=g.datetime order by added desc" },
-	{ noun: "recent_feedback", query: "select * from feedback where isdeleted <> 'T' order by dtcreated desc limit 10" },
+	{ noun: "recent_feedback", query: "select * from feedback where isdeleted <> 'T' order by dtcreated desc limit 5" },
 	{ noun: "on_this_day", query: "select * from gig where month(datetime)=month(now()) and day(datetime)=day(now()) order by datetime" },
 	{ noun: "media_by_song", key: 'name', query: "select * from media where ?" },
 	{ noun: 'gig_by_datetime', key: 'datetime', query: "select *, CAST(datetime as CHAR) as datetime from gig where ? AND isdeleted IS NULL", joins: [
