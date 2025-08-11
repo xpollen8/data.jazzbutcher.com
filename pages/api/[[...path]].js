@@ -7,11 +7,11 @@ let db_FEEDBACK;
 
 const queries = [
 	// called by jazzbutcher.com
-	{ noun: "gigs", query: "select * from gig where isdeleted IS NULL" },
+	{ noun: "gigs", query: "select * from gig where isdeleted IS NULL order by datetime" },
 	{ noun: "gigsongs", query: "select * from gigsong order by datetime, type, setnum, ordinal" },
-	{ noun: "gigtexts", query: "select * from gigtext" },
+	{ noun: "gigtexts", query: "select * from gigtext order by datetime" },
 	{ noun: "gigmedias", query: "select * from gigmedia" },
-	{ noun: "performances", query: "select * from performance" },
+	{ noun: "performances", query: "select * from performance order by datetime" },
 	{ noun: "gigs_by_musician", key: "p.performer", query: 'select * from performance p, gig g where {{key}} like "[[person:%{{value}}%" and p.datetime=g.datetime' },
 	{ noun: "gigs_by_song", key: "s.song", query: 'select * from gigsong s, gig g where {{key}} like "%{{value}}%" and s.datetime=g.datetime' },
 	{ noun: "presses", query: "select url, type, person, dtadded, dtpublished, dtgig, todo, album, thumb, images, audio, media, publication, location, title, headline, subhead, summary, source, credit, LENGTH(body) - LENGTH(REPLACE(body, ' ', '')) as bodycount from press" },
@@ -54,7 +54,7 @@ const queries = [
 			{ name: 'media', key: 'datetime', noun: 'gigmedia' },
 			{ name: 'text', key: 'datetime', noun: 'gigtext' },
 			{ name: 'players', key: 'datetime', noun: 'performance' },
-			{ name: 'press', key: 'datetime', noun: 'press' },
+			{ name: 'press', key: 'dtgig', noun: 'press' },
 			{ name: 'next', key: 'datetime', noun: 'nextgig' },
 			{ name: 'prev', key: 'datetime', noun: 'prevgig' },
 		]
@@ -126,6 +126,26 @@ const doQuery = async (noun, key, type, value) => {
 			Q = mysql.format(sql, [ { [key]: value } ]);
 		}
 		//console.log("Q", Q);
+		const unUTC = (timestampStr) => {
+			try {
+				return new Date(new Date(timestampStr)?.getTime() - (new Date(timestampStr)?.getTimezoneOffset() * 60 * 1000))?.toISOString()?.replace(/T/, ' ')?.replace(/Z/, '')?.replace(/.000/, '');
+			} catch (e) {
+				// return as-is
+				return timestampStr;
+			}
+		}
+
+		const pruneRow = (row) => {
+			// remove empty attributes from data structure
+			Object.keys(row).forEach(index => {
+				if (!row[index] || row[index] === '0000-00-00 00:00:00') {
+					delete row[index];
+				} else if (index === 'added' || index === 'datetime' || index === 'dtadded' || index === 'dtgig' || index === 'dtpublished') {
+					row[index] = unUTC(row[index]);
+				}
+			});
+		}
+
 		const thisResults = await db.query(Q)
 			.then(async results => {
 				//console.log("RES", { key, results });
@@ -144,6 +164,8 @@ const doQuery = async (noun, key, type, value) => {
 								return;
 							}
 							const res = await doQuery(jnoun, null, jtype, jvalue);
+							// remove unused attributes
+							res?.results?.forEach(pruneRow);
 							// only return '.results' for joined items.
 							joins[jname] = res.results;
 						}
@@ -154,7 +176,9 @@ const doQuery = async (noun, key, type, value) => {
 					//obj.cache = row;
 				}
 
-				results.forEach((res, key) => {
+				results.forEach((row, key) => {
+					// remove unused attributes
+					pruneRow(row);
 					// add the named joins to the original record
 					results[key] = { ...results[key], ...joins };
 				})
