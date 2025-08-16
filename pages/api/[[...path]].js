@@ -143,7 +143,12 @@ const doQuery = async (noun, key, type, value) => {
 				if (row[index] === null || (!row[index] && row[index] !== 0) || row[index] === '0000-00-00 00:00:00') {
 					delete row[index];
 				} else if (index === 'added' || index === 'datetime' || index === 'dtadded' || index === 'dtgig' || index === 'dtpublished' || index === 'credit_date' || index === 'dtcreated') {
-					row[index] = unUTC(row[index]);
+					const val = unUTC(row[index]);
+					if (val) {
+						row[index] = unUTC(row[index]);
+					} else {
+						delete row[index];
+					}
 				}
 			});
 		}
