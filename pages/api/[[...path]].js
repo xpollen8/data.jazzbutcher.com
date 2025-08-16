@@ -87,6 +87,42 @@ const queries = [
 	{ key: 'song', noun: "live_performances_with_media_by_song", query: 'select * from gigsong where {{key}}="{{value}}" and length(mediaurl) > 0 order by type, setnum, ordinal' },
 ];
 
+const unUTC = (timestampStr) => {
+	try {
+		return new Date(new Date(timestampStr)?.getTime() - (new Date(timestampStr)?.getTimezoneOffset() * 60 * 1000))?.toISOString()?.replace(/T/, ' ')?.replace(/Z/, '')?.substr(0, 19);
+		//return new Date(new Date(timestampStr)?.getTime() - (new Date(timestampStr)?.getTimezoneOffset() * 60 * 1000))?.toISOString()?.replace(/T/, ' ')?.replace(/Z/, '')?.substr(0, 19)?.replace(/ 00:00:00/, '');
+	} catch (e) {
+		// return as-is
+		return timestampStr;
+	}
+}
+
+const pruneRow = (row) => {
+	try {
+	// remove empty attributes from data structure
+	const ret = {};
+	//console.log("IN", row);
+	Object.keys(row).forEach(index => {
+		// keep explicit '0' values
+		if (row[index] === null || (!row[index] && row[index] !== 0) || row[index] === '0000-00-00 00:00:00') {
+			//console.log("DROP", index);
+			//delete row[index];
+		} else if (index === 'added' || index === 'datetime' || index === 'dtadded' || index === 'dtgig' || index === 'dtpublished' || index === 'credit_date' || index === 'dtcreated') {
+			//row[index] = unUTC(row[index]);
+			//console.log("CONVERT", index);
+			ret[index] = unUTC(row[index]);
+		} else {
+			//console.log("KEEP", index);
+			ret[index] = row[index];
+		}
+	});
+	//console.log("OUT", ret);
+	return ret;
+	} catch (e) {
+		//console.log("FUCK", e);
+	}
+}
+
 const doQuery = async (noun, key, type, value) => {
 	try {
 		//console.log("LOOKUP", noun, key, type, value);
@@ -126,32 +162,6 @@ const doQuery = async (noun, key, type, value) => {
 			Q = mysql.format(sql, [ { [key]: value } ]);
 		}
 		//console.log("Q", Q);
-		const unUTC = (timestampStr) => {
-			try {
-				return new Date(new Date(timestampStr)?.getTime() - (new Date(timestampStr)?.getTimezoneOffset() * 60 * 1000))?.toISOString()?.replace(/T/, ' ')?.replace(/Z/, '')?.substr(0, 19);
-				//return new Date(new Date(timestampStr)?.getTime() - (new Date(timestampStr)?.getTimezoneOffset() * 60 * 1000))?.toISOString()?.replace(/T/, ' ')?.replace(/Z/, '')?.substr(0, 19)?.replace(/ 00:00:00/, '');
-			} catch (e) {
-				// return as-is
-				return timestampStr;
-			}
-		}
-
-		const pruneRow = (row) => {
-			// remove empty attributes from data structure
-			Object.keys(row).forEach(index => {
-				// keep explicit '0' values
-				if (row[index] === null || (!row[index] && row[index] !== 0) || row[index] === '0000-00-00 00:00:00') {
-					delete row[index];
-				} else if (index === 'added' || index === 'datetime' || index === 'dtadded' || index === 'dtgig' || index === 'dtpublished' || index === 'credit_date' || index === 'dtcreated') {
-					const val = unUTC(row[index]);
-					if (val) {
-						row[index] = unUTC(row[index]);
-					} else {
-						delete row[index];
-					}
-				}
-			});
-		}
 
 		const thisResults = await db.query(Q)
 			.then(async results => {
@@ -172,7 +182,7 @@ const doQuery = async (noun, key, type, value) => {
 							}
 							const res = await doQuery(jnoun, null, jtype, jvalue);
 							// remove unused attributes
-							res?.results?.forEach(pruneRow);
+							//res?.results?.forEach(pruneRow);
 							// only return '.results' for joined items.
 							joins[jname] = res.results;
 						}
@@ -185,9 +195,11 @@ const doQuery = async (noun, key, type, value) => {
 
 				results.forEach((row, key) => {
 					// remove unused attributes
-					pruneRow(row);
+					//pruneRow(row);
 					// add the named joins to the original record
-					results[key] = { ...results[key], ...joins };
+					//results[key] = { ...pruneRow(results[key]), ...joins };
+					//console.log("KEY", key, pruneRow(results[key]));
+					results[key] = pruneRow({ ...results[key], ...joins });
 				})
 
 				const ret = { noun, key, value, numResults: results.length, results };
