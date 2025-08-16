@@ -89,8 +89,8 @@ const queries = [
 
 const unUTC = (timestampStr) => {
 	try {
-		return new Date(new Date(timestampStr)?.getTime() - (new Date(timestampStr)?.getTimezoneOffset() * 60 * 1000))?.toISOString()?.replace(/T/, ' ')?.replace(/Z/, '')?.substr(0, 19);
-		//return new Date(new Date(timestampStr)?.getTime() - (new Date(timestampStr)?.getTimezoneOffset() * 60 * 1000))?.toISOString()?.replace(/T/, ' ')?.replace(/Z/, '')?.substr(0, 19)?.replace(/ 00:00:00/, '');
+		//return new Date(new Date(timestampStr)?.getTime() - (new Date(timestampStr)?.getTimezoneOffset() * 60 * 1000))?.toISOString()?.replace(/T/, ' ')?.replace(/Z/, '')?.substr(0, 19);
+		return new Date(new Date(timestampStr)?.getTime() - (new Date(timestampStr)?.getTimezoneOffset() * 60 * 1000))?.toISOString()?.replace(/T/, ' ')?.replace(/Z/, '')?.substr(0, 19)?.replace(/ 00:00:00/, '');
 	} catch (e) {
 		// return as-is
 		return timestampStr;
@@ -104,15 +104,11 @@ const pruneRow = (row) => {
 	//console.log("IN", row);
 	Object.keys(row).forEach(index => {
 		// keep explicit '0' values
-		if (row[index] === null || (!row[index] && row[index] !== 0) || row[index] === '0000-00-00 00:00:00') {
+		if ((!row[index] && row[index] !== 0) || row[index] === '0000-00-00 00:00:00') {
 			//console.log("DROP", index);
-			//delete row[index];
 		} else if (index === 'added' || index === 'datetime' || index === 'dtadded' || index === 'dtgig' || index === 'dtpublished' || index === 'credit_date' || index === 'dtcreated') {
-			//row[index] = unUTC(row[index]);
-			//console.log("CONVERT", index);
 			ret[index] = unUTC(row[index]);
 		} else {
-			//console.log("KEEP", index);
 			ret[index] = row[index];
 		}
 	});
