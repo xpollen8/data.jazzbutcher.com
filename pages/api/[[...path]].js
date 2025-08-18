@@ -109,7 +109,23 @@ const pruneRow = (row) => {
 		} else if (index === 'added' || index === 'datetime' || index === 'dtadded' || index === 'dtgig' || index === 'dtpublished' || index === 'credit_date' || index === 'dtcreated') {
 			ret[index] = unUTC(row[index]);
 		} else {
-			ret[index] = row[index];
+			if (['dtadded','credit_date'].includes(index) && !row['added']) {
+				/*
+					add 'added' data if not already exists by that name
+				 */
+				row['added'] = row[index];
+			}
+			if (index === 'body' && row[index]?.length) {
+				/*
+					clean up messy html
+				 */
+				ret[index] = row[index]
+					?.replace(/<p>/gi, '<p\/>')
+					?.replace(/<br>/gi, '<br\/>')
+					?.replace(/\s\s+/g, ' ')	// collapse all spaces into one
+			} else {
+				ret[index] = row[index];
+			}
 		}
 	});
 	//console.log("OUT", ret);
