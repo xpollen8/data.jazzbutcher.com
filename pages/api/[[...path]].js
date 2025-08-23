@@ -12,43 +12,42 @@ const queries = [
 	{ noun: "gigtexts", query: "select * from gigtext order by datetime" },
 	{ noun: "gigmedias", query: "select * from gigmedia" },
 	{ noun: "performances", query: "select * from performance order by datetime" },
-	{ noun: "gigs_by_musician", key: "p.performer", query: 'select * from performance p, gig g where {{key}} like "[[person:%{{value}}%" and p.datetime=g.datetime' },
-	{ noun: "gigs_by_song", key: "s.song", query: 'select * from gigsong s, gig g where {{key}} like "%{{value}}%" and s.datetime=g.datetime' },
-	{ noun: "presses", query: "select url, type, person, dtadded, dtpublished, dtgig, todo, album, thumb, images, audio, media, publication, location, title, headline, subhead, summary, source, credit, LENGTH(body) - LENGTH(REPLACE(body, ' ', '')) as bodycount from press" },
-	{ noun: "presses_for_admin", query: "select * from press" },
+	{ noun: "presses", query: "select *, LENGTH(body) - LENGTH(REPLACE(body, ' ', '')) as bodycount from press" },
 	{ noun: "medias", query: "select * from media order by dtcreated" },
 	{ noun: "feedbacks", query: "select * from feedback where isdeleted <> 'T'" },
 	{ noun: "feedback", query: 'select * from feedback where isdeleted <> "T" and uri = "{{value}}" order by dtcreated desc' },
 	{ noun: "lyrics", query: "select * from lyrics order by title" },
-	{ noun: "lyric_by_href", key: 'href', query: "select * from lyrics where {{key}} like '{{value}}%'" },
-	{ noun: "unreleased_audio", query: "select * from media where type='audio' and length(lookup) = 0 and collection like '%session%' order by project, collection, ordinal" },
-	{ noun: "audio", query: "select * from media where type='audio' order by project, collection, ordinal" },
-	{ noun: "video", query: "select * from media where type='video' order by project, collection, ordinal" },
+	// STATIC { noun: "gigs_by_musician", key: "p.performer", query: 'select * from performance p, gig g where {{key}} like "[[person:%{{value}}%" and p.datetime=g.datetime' },
+	// STATIC { noun: "gigs_by_song", key: "s.song", query: 'select * from gigsong s, gig g where {{key}} like "%{{value}}%" and s.datetime=g.datetime' },
+	// STATIC { noun: "lyric_by_href", key: 'href', query: "select * from lyrics where {{key}} like '{{value}}%'" },
+	// STATIC { noun: "unreleased_audio", query: "select * from media where type='audio' and length(lookup) = 0 and collection like '%session%' order by project, collection, ordinal" },
+	// STATIC { noun: "audio", query: "select * from media where type='audio' order by project, collection, ordinal" },
+	// STATIC { noun: "video", query: "select * from media where type='video' order by project, collection, ordinal" },
 	{ noun: "release_video_by_project", key: 'project', query: "select * from media where ? and type='video' order by collection, ordinal" },
 	{ noun: "live_video_by_project", key: 'project', query: "select * from media where ? and type='video' and datetime <> '0000-00-00 00:00:00' order by collection, ordinal" },
-	{ noun: "release_audio_by_project", key: 'project', query: "select * from performance where ? and category='release' and media <> 'NULL' group by lookup, song order by lookup, ordinal" },
-	{ noun: "releases_by_song", key: 'song', query: 'select distinct(lookup), media, version from performance where ? and category="release"' },
-	{ noun: "songs_by_release", query: 'select *, song as title from performance where lookup = "{{value}}" and length(performer) = 0 order by type, ordinal' },
-	{ noun: "credits_by_release", query: 'select * from performance where lookup="{{value}}" and length(performer) > 0' },
-	{ noun: "songs_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}} like '%{{value}}%'" },
-	{ noun: "presses_by_release", key: 'album', query: "select url, type, person, dtadded, dtpublished, dtgig, todo, album, thumb, images, media, publication, location, title, headline, subhead, summary, source, credit from press where ? order by dtpublished" },
-	{ noun: "press_by_href", key: 'url', query: 'select * from press where {{key}} = "/press/{{value}}.html" or {{key}} = "/press/{{value}}"' },
+	{ noun: "release_audio_by_project", key: 'project', query: "select * from performance where ? and category='release' and media IS NOT NULL group by lookup, song order by lookup, ordinal" },
+	// STATIC { noun: "releases_by_song", key: 'song', query: 'select distinct(lookup), media, version from performance where ? and category="release"' },
+	// STATIC { noun: "songs_by_release", query: 'select *, song as title from performance where lookup = "{{value}}" and length(performer) = 0 order by type, ordinal' },
+	// STATIC { noun: "credits_by_release", query: 'select * from performance where lookup="{{value}}" and length(performer) > 0' },
+	// STATIC { noun: "songs_by_datetime", key: 'datetime', query: "select * from gigsong where {{key}} like '%{{value}}%'" },
+	// STATIC { noun: "presses_by_release", key: 'album', query: "select url, type, person, dtadded, dtpublished, dtgig, todo, album, thumb, images, media, publication, location, title, headline, subhead, summary, source, credit from press where ? order by dtpublished" },
+	// STATIC { noun: "press_by_href", key: 'url', query: 'select * from press where {{key}} = "/press/{{value}}.html" or {{key}} = "/press/{{value}}"' },
 
 	// others
-	{ key: 'dtgig', noun: "press", query: "select * from press where ? order by album, dtpublished desc" },
-	{ key: 'person', noun: "interviews_by_person", query: 'select * from press where type like "%interview%" and {{key}}="{{value}}" order by dtpublished desc' },
-	{ noun: "posters", query: "select datetime from gig where extra like '%poster%' and isdeleted IS NULL order by datetime desc" },
-	{ noun: "prevgig", query: "select datetime from gig where isdeleted IS NULL and datetime < '{{value}}' order by datetime desc limit 1" },
-	{ noun: "nextgig", query: "select datetime from gig where isdeleted IS NULL and datetime > '{{value}}' order by datetime limit 1" },
-	{ noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
-	{ noun: "gigmedia_by_datetime", query: "select * from gigmedia where datetime = '{{value}}'" },
+	// UNUSED { key: 'dtgig', noun: "press", query: "select * from press where ? order by album, dtpublished desc" },
+	// UNUSED { key: 'person', noun: "interviews_by_person", query: 'select * from press where type like "%interview%" and {{key}}="{{value}}" order by dtpublished desc' },
+	// UNUSED { noun: "posters", query: "select datetime from gig where extra like '%poster%' and isdeleted IS NULL order by datetime desc" },
+	// STATIC { noun: "prevgig", query: "select datetime from gig where isdeleted IS NULL and datetime < '{{value}}' order by datetime desc limit 1" },
+	// STATIC { noun: "nextgig", query: "select datetime from gig where isdeleted IS NULL and datetime > '{{value}}' order by datetime limit 1" },
+	// UNUSED { noun: "gigtext_by_datetime", query: "select * from gigtext where datetime = '{{value}}'" },
+	// UNUSED { noun: "gigmedia_by_datetime", query: "select * from gigmedia where datetime = '{{value}}'" },
 	{ noun: "recent_press", query: "select * from press where dtadded > now() - interval 1 year order by dtadded desc" },
 	{ noun: "recent_gigmedia", query: "select * from gigmedia  where credit_date > now() - interval 3 month order by type, credit_date desc" },
 	//{ noun: "recent_media", query: "select * from media where dtcreated > now() - interval 1 month order by dtcreated desc" },
 	{ noun: "recent_media", query: "select g.*, gs.* from gigsong gs, gig g where gs.added > now() - interval 3 month and gs.datetime=g.datetime order by added desc" },
 	{ noun: "recent_feedback", query: "select * from feedback where isdeleted <> 'T' order by dtcreated desc limit 5" },
-	{ noun: "on_this_day", query: "select * from gig where month(datetime)=month(now()) and day(datetime)=day(now()) order by datetime" },
-	{ noun: "media_by_song", key: 'name', query: "select * from media where ?" },
+	// STATIC { noun: "on_this_day", query: "select * from gig where month(datetime)=month(now()) and day(datetime)=day(now()) order by datetime" },
+	// UNUSED { noun: "media_by_song", key: 'name', query: "select * from media where ?" },
 	{ noun: 'gig_by_datetime', key: 'datetime', query: "select *, CAST(datetime as CHAR) as datetime from gig where ? AND isdeleted IS NULL", joins: [
 			{ name: 'played', key: 'datetime', noun: 'gigsong' },
 			{ name: 'media', key: 'datetime', noun: 'gigmedia' },
@@ -59,14 +58,14 @@ const queries = [
 			{ name: 'prev', key: 'datetime', noun: 'prevgig' },
 		]
 	},
-	{ noun: 'gig', key: 'gig_id', query: "select * from gig where {{key}}={{value}} AND isdeleted IS NULL", joins: [
-			{ name: 'played', key: 'datetime', noun: 'gigsong' },
-			{ name: 'media', key: 'datetime', noun: 'gigmedia' },
-			{ name: 'text', key: 'datetime', noun: 'gigtext' },
-			{ name: 'players', key: 'datetime', noun: 'performance' },
-			{ name: 'press', key: 'datetime', noun: 'press' },
-		]
-	},
+	// STATIC { noun: 'gig', key: 'gig_id', query: "select * from gig where {{key}}={{value}} AND isdeleted IS NULL", joins: [
+	// STATIC 		{ name: 'played', key: 'datetime', noun: 'gigsong' },
+	// STATIC 		{ name: 'media', key: 'datetime', noun: 'gigmedia' },
+	// STATIC 		{ name: 'text', key: 'datetime', noun: 'gigtext' },
+	// STATIC 		{ name: 'players', key: 'datetime', noun: 'performance' },
+	// STATIC 		{ name: 'press', key: 'datetime', noun: 'press' },
+	// STATIC 	]
+	// STATIC },
 	{ noun: "performance_by_datetime", key: 'datetime', query: "select * from performance where ?" },
 	{ noun: "gigsong_by_datetime", key: 'datetime', query: "select * from gigsong where ? order by type, setnum, ordinal" },
 	{ key: 'dtgig', noun: "press", query: "select * from press where ?" },
@@ -79,12 +78,12 @@ const queries = [
 	{ noun: "gigs_and_year_by_id", query: "select *, year(datetime) as year from gig where find_in_set('{{id}}', extra) and isdeleted IS NULL order by datetime desc" },
 	{ noun: "gigs_with_feedback", query: "select distinct(uri) from feedback where isdeleted <> 'T' and uri like '%gigs/%' order by uri desc" },
 	{ noun: "gigs_with_video", query: "select gig_id, datetime, venue, address, city, state, postalcode, country, extra, blurb, title from gig where find_in_set('video', extra) and isdeleted IS NULL order by datetime desc" },
-	{ key: 'lookup', noun: "album_personnel", query: "select * from performance where ?" },
+	// UNUSED { key: 'lookup', noun: "album_personnel", query: "select * from performance where ?" },
 	{ noun: "gigs_with_audio", query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
 	{ noun: "audio_by_project", key: 'g.extra', query: "select gs.*, g.extra, g.venue, g.city, g.country from gigsong gs, gig g where gs.mediaurl like '%audio/%' and gs.datetime = g.datetime and g.isdeleted IS NULL and {{key}} like '%{{value}}%' group by g.datetime order by gs.datetime desc, gs.type desc, gs.setnum, gs.ordinal" },
-	{ key: 'song', noun: "live_performances_by_song", query: 'select * from gigsong gs, gig g where gs.datetime=g.datetime and {{key}}="{{value}}"' },
-	{ key: 'song', key: 'song', noun: "performances_by_song", query: 'select * from performance where {{key}}="{{value}}" and media <> "NULL"' },
-	{ key: 'song', noun: "live_performances_with_media_by_song", query: 'select * from gigsong where {{key}}="{{value}}" and length(mediaurl) > 0 order by type, setnum, ordinal' },
+	// STATIC { key: 'song', noun: "live_performances_by_song", query: 'select * from gigsong gs, gig g where gs.datetime=g.datetime and {{key}}="{{value}}"' },
+	// UNUSED { key: 'song', key: 'song', noun: "performances_by_song", query: 'select * from performance where {{key}}="{{value}}" and media IS NOT NULL' },
+	// UNUSED { key: 'song', noun: "live_performances_with_media_by_song", query: 'select * from gigsong where {{key}}="{{value}}" and length(mediaurl) > 0 order by type, setnum, ordinal' },
 ];
 
 const unUTC = (timestampStr) => {
@@ -104,8 +103,8 @@ const pruneRow = (row) => {
 	//console.log("IN", row);
 	Object.keys(row).forEach(index => {
 		// keep explicit '0' values
-		if ((!row[index] && row[index] !== 0) || row[index] === '0000-00-00 00:00:00') {
-			//console.log("DROP", index);
+		if ((!row[index] && row[index] !== 0) || row[index] === '0000-00-00 00:00:00' || row[index] === 'NULL') {
+			if (index === 'author') console.log("DROP", index);
 		} else if (index === 'added' || index === 'datetime' || index === 'dtadded' || index === 'dtgig' || index === 'dtpublished' || index === 'credit_date' || index === 'dtcreated') {
 			ret[index] = unUTC(row[index]);
 		} else {
@@ -167,13 +166,16 @@ const doQuery = async (noun, key, type, value) => {
 			}
 		}
 		let Q;
+		console.log("XXX", { key, value });
+		value = value?.replace(/"/g, '');
 		if (type === 'like') {
 			sql = sql.replace('?', `${key} like ?`);
-			Q = mysql.format(sql, [ '%' + value + '%' ]);
+			Q = mysql.format(sql, [ '%' + mysql.escape(value) + '%' ]);
 		} else {
-			Q = mysql.format(sql, [ { [key]: value } ]);
+					//console.log("SQL", { sql, key, value: mysql.escape(value) });
+			Q = mysql.format(sql, [ { [key]: mysql.escape(value) } ]);
 		}
-		//console.log("Q", Q);
+		//console.log("Q", { sql, value });
 
 		const thisResults = await db.query(Q)
 			.then(async results => {
