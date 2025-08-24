@@ -104,7 +104,7 @@ const pruneRow = (row) => {
 	Object.keys(row).forEach(index => {
 		// keep explicit '0' values
 		if ((!row[index] && row[index] !== 0) || row[index] === '0000-00-00 00:00:00' || row[index] === 'NULL') {
-			if (index === 'author') console.log("DROP", index);
+			//if (index === 'author') console.log("DROP", index);
 		} else if (index === 'added' || index === 'datetime' || index === 'dtadded' || index === 'dtgig' || index === 'dtpublished' || index === 'credit_date' || index === 'dtcreated') {
 			ret[index] = unUTC(row[index]);
 		} else {
@@ -166,7 +166,7 @@ const doQuery = async (noun, key, type, value) => {
 			}
 		}
 		let Q;
-		console.log("XXX", { key, value });
+		//console.log("XXX", { key, value });
 		value = value?.replace(/"/g, '');
 		if (type === 'like') {
 			sql = sql.replace('?', `${key} like ?`);
