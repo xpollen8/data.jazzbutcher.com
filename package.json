@@ -13,8 +13,8 @@
   "dependencies": {
     "mywrap": "github:xpollen8/mywrap",
     "next": "^15.2.3",
+    "react": "19.2.0",
     "react-dom": "19.2.0",
-    "react": "19.1.1",
     "urlencode": "^2.0.0"
   }
 }
