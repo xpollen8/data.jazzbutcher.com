@@ -195,11 +195,11 @@ const handler = async (req, res) => {
 				//console.log("RES", resX);
 				res.json(rets);
 			} else {
-				const { session, host, feedback_id, uri, subject, who, whence, comments } = req.body;
+				const { session, host, feedback_id, uri, subject, who, whence, comments, isdeleted = 'F' } = req.body;
 				//console.log("POST", { session, host, path, noun, key, type, value, body: req.body });
 				switch (noun) {
 					case 'feedback_by_page_new': {
-						const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
+						const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?, `isdeleted` = ?',
 							[
 								session,
 								host,
@@ -207,7 +207,8 @@ const handler = async (req, res) => {
 								subject,
 								who || 'No Email Given',
 								whence || 'No Location Given',
-								comments
+								comments,
+								isdeleted || 'F'
 							]);
 						return res.json(resX);
 					}
