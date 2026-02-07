@@ -45,6 +45,7 @@ const unUTC = (timestampStr) => {
 
 const removeHTML = (str) => {
 	const deParagraphed = str
+		?.replace(/&nbsp;/ig, ' ')
 		?.replace(/<BR>/ig, '<br/>') // <BR> => <br/>
 		?.replace(/<p>/ig, '<br/>') // <p> => <br/>
 		?.replace(/<p([^>]+)>/ig, '<br/>')  // <p.....> => <br/>
