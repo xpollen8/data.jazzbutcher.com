@@ -45,7 +45,7 @@ const unUTC = (timestampStr) => {
 
 const removeHTML = (str) => {
 	const deParagraphed = str
-		?.replace(/\&nbsp;/ig, ' ')
+		?.replace(/&nbsp;/ig, ' ')
 		?.replace(/<BR>/ig, '<br/>') // <BR> => <br/>
 		?.replace(/<p>/ig, '<br/>') // <p> => <br/>
 		?.replace(/<p([^>]+)>/ig, '<br/>')  // <p.....> => <br/>
@@ -84,6 +84,7 @@ const pruneRow = (row) => {
 					body fields may contain valid HMTL
 				 */
 				ret[index] = row[index]
+					?.replace(/&nbsp;/ig, ' ')
 					?.replace(/<p>/gi, '<p\/>')
 					?.replace(/<br>/gi, '<br\/>')
 					?.replace(/\s\s+/g, ' ')	// collapse all spaces into one
