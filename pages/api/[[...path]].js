@@ -85,6 +85,8 @@ const pruneRow = (row) => {
 				 */
 				ret[index] = row[index]
 					?.replace(/&nbsp;/ig, ' ')
+					?.replace(/&quot;/ig, '"')
+					?.replace(/ ,/g, ',')
 					?.replace(/<p>/gi, '<p\/>')
 					?.replace(/<br>/gi, '<br\/>')
 					?.replace(/\s\s+/g, ' ')	// collapse all spaces into one
