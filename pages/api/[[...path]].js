@@ -169,6 +169,7 @@ const handler = async (req, res) => {
 		if (method === 'DELETE' || method === 'POST' || noun === 'feedback_delete')  {
 			if (!db_FEEDBACK) {
 				db_FEEDBACK = await (new Db({
+					port: process.env['JBC_MYSQL_PORT'],
 					host: process.env['JBC_MYSQL_HOST'],
 					user: process.env['JBC_MYSQL_USER_FEEDBACK'],
 					database: process.env['JBC_MYSQL_DATABASE'],
@@ -241,6 +242,7 @@ const handler = async (req, res) => {
 		} else if (method === 'GET')  {
 			if (!db) {
 				db = await (new Db({
+					port: process.env['JBC_MYSQL_PORT'],
 					host: process.env['JBC_MYSQL_HOST'],
 					user: process.env['JBC_MYSQL_USER'],
 					database: process.env['JBC_MYSQL_DATABASE'],
