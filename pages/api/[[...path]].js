@@ -197,7 +197,7 @@ const handler = async (req, res) => {
 						"T",
 						value,
 					]);
-				console.log("RES", resX);
+				//console.log("RES", resX);
 				res.json(rets);
 			} else {
 				const { session, host, feedback_id, uri, subject, who, whence, comments, isdeleted = 'F' } = req.body;
