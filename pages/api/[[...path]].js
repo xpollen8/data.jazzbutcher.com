@@ -25,12 +25,12 @@ const queries = [
 	{ noun: "medias", query: "select * from media order by dtcreated" },
 	{ noun: "lyrics", query: "select * from lyrics order by title" },
 
-	{ noun: "feedbacks", query: "select * from feedback where isdeleted <> 'T' order by dtcreated desc" },
-	{ noun: "feedback", query: 'select * from feedback where isdeleted <> "T" and uri = "{{value}}" order by dtcreated desc' },
-	{ noun: "recent_feedback", query: "select * from feedback where isdeleted <> 'T' order by dtcreated desc limit 5" },
+	{ noun: "feedbacks", query: "select * from feedback where isdeleted != 'T' order by dtcreated desc" },
+	{ noun: "feedback", query: "select * from feedback where isdeleted != 'T' and uri = '{{value}}' order by dtcreated desc" },
+	{ noun: "recent_feedback", query: "select * from feedback where isdeleted != 'T' order by dtcreated desc limit 5" },
 
 	{ noun: "release_video_by_project", key: 'project', query: "select * from media where ? and type='video' order by collection, ordinal" },
-	{ noun: "live_video_by_project", key: 'project', query: "select * from media where ? and type='video' and datetime <> '0000-00-00 00:00:00' order by collection, ordinal" },
+	{ noun: "live_video_by_project", key: 'project', query: "select * from media where ? and type='video' and datetime != '0000-00-00 00:00:00' order by collection, ordinal" },
 ];
 
 const unUTC = (timestampStr) => {
@@ -197,7 +197,7 @@ const handler = async (req, res) => {
 						"T",
 						value,
 					]);
-				//console.log("RES", resX);
+				console.log("RES", resX);
 				res.json(rets);
 			} else {
 				const { session, host, feedback_id, uri, subject, who, whence, comments, isdeleted = 'F' } = req.body;
