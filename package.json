@@ -1,9 +1,9 @@
 {
   "name": "data.jazzbutcher.com",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "private": true,
 	"engines": {
-		"node": ">=v20.x.x"
+		"node": ">=v24.x.x"
 	},
   "scripts": {
     "dev": "next dev -p 3001",
@@ -12,6 +12,6 @@
   },
   "dependencies": {
     "mywrap": "github:xpollen8/mywrap",
-    "next": "^16.0.0"
+    "next": "16.3.0"
   }
 }
