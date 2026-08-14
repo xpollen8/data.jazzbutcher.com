@@ -1,3 +1,4 @@
+"use cache"
 const Db = require('mywrap');
 const mysql = require('mysql2');
 
