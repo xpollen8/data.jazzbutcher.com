@@ -1,4 +1,9 @@
 const nextConfig = {
+		cacheComponents: true,
+		experimental: {
+			turbopackFileSystemCacheForDev: true,
+			turbopackFileSystemCacheForBuild: true,
+		},
     async headers() {
         return [
             {
