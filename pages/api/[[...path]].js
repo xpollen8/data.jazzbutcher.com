@@ -5,17 +5,6 @@ const mysql = require('mysql2');
 let db;
 let db_FEEDBACK;
 
-const censorEmail = (str) => {
-	if (!str) return;
-	const [ addr, fqdn ] = str?.split('@');
-	if (!fqdn) return str;
-	const parts = fqdn?.split('.');
-	const top = parts.pop();
-	const domain = parts.join('.');
-	const blank = new Array(domain.length + Math.floor(Math.random() * 4)).join( '.' );
-	return addr + '@' + blank + '.' + top;
-}
-
 const queries = [
 	{ noun: "gigs", query: "select * from gig where isdeleted IS NULL order by datetime" },
 	{ noun: "gigsongs", query: "select * from gigsong order by datetime, type, setnum, ordinal" },
@@ -29,15 +18,27 @@ const queries = [
 	{ noun: "feedbacks", query: "select * from feedback where isdeleted != 'T' order by dtcreated desc" },
 	{ noun: "feedback", query: "select * from feedback where isdeleted != 'T' and uri = '{{value}}' order by dtcreated desc" },
 	{ noun: "recent_feedback", query: "select * from feedback where isdeleted != 'T' order by dtcreated desc limit 5" },
-
-	{ noun: "release_video_by_project", key: 'project', query: "select * from media where ? and type='video' order by collection, ordinal" },
-	{ noun: "live_video_by_project", key: 'project', query: "select * from media where ? and type='video' and datetime != '0000-00-00 00:00:00' order by collection, ordinal" },
 ];
+
+const censorEmail = (str) => {
+	if (!str) return;
+	const [ addr, fqdn ] = str?.split('@');
+	if (!fqdn) return str;
+	const parts = fqdn?.split('.');
+	const top = parts.pop();
+	const domain = parts.join('.');
+	const blank = new Array(domain.length + Math.floor(Math.random() * 4)).join( '.' );
+	return addr + '@' + blank + '.' + top;
+}
 
 const unUTC = (timestampStr) => {
 	try {
-		//return new Date(new Date(timestampStr)?.getTime() - (new Date(timestampStr)?.getTimezoneOffset() * 60 * 1000))?.toISOString()?.replace(/T/, ' ')?.replace(/Z/, '')?.substr(0, 19);
-		return new Date(new Date(timestampStr)?.getTime() - (new Date(timestampStr)?.getTimezoneOffset() * 60 * 1000))?.toISOString()?.replace(/T/, ' ')?.replace(/Z/, '')?.substr(0, 19)?.replace(/ 00:00:00/, '');
+		return new Date(new Date(timestampStr)?.getTime() - (new Date(timestampStr)?.getTimezoneOffset() * 60 * 1000))
+			?.toISOString()
+			?.replace(/T/, ' ')
+			?.replace(/Z/, '')
+			?.substr(0, 19)
+			?.replace(/ 00:00:00/, '');
 	} catch (e) {
 		// return as-is
 		return timestampStr;
@@ -71,7 +72,13 @@ const pruneRow = (row) => {
 		// keep explicit '0' values
 		if ((!row[index] && row[index] !== 0) || row[index] === '0000-00-00 00:00:00' || row[index] === 'NULL') {
 			//if (index === 'author') console.log("DROP", index);
-		} else if (index === 'added' || index === 'datetime' || index === 'dtadded' || index === 'dtgig' || index === 'dtpublished' || index === 'credit_date' || index === 'dtcreated') {
+		} else if (index === 'added'
+			|| index === 'datetime'
+			|| index === 'dtadded'
+			|| index === 'dtgig'
+			|| index === 'dtpublished'
+			|| index === 'credit_date'
+			|| index === 'dtcreated') {
 			ret[index] = unUTC(row[index]);
 		} else {
 			if (['dtadded','credit_date'].includes(index) && !row['added']) {
