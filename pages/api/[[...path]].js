@@ -4,6 +4,7 @@ const mysql = require('mysql2');
 
 let db;
 let db_FEEDBACK;
+let db_ADMIN;
 
 const queries = [
 	{ noun: "gigs", query: "select * from gig where isdeleted IS NULL order by datetime" },
@@ -173,8 +174,9 @@ const handler = async (req, res) => {
 			value = type;
 			type  = 'is';
 		}
-		//console.log("PATH", path, [ key, type, value ]);
-		if (method === 'DELETE' || method === 'POST' || noun === 'feedback_delete')  {
+		//console.log("INCOMING", { noun, path, method, key, type, value });
+		if (['feedback_delete','feedback_by_page_new','feedback_by_page_reply'].includes(noun)) {
+			// feedback user
 			if (!db_FEEDBACK) {
 				db_FEEDBACK = await (new Db({
 					port: process.env['JBC_MYSQL_PORT'],
@@ -186,11 +188,73 @@ const handler = async (req, res) => {
 					queueLimit: process.env['JBC_MYSQL_QUEUELIMIT'],
 				})).start();
 			}
+			const { session, host, feedback_id, uri, subject, who, whence, comments, isdeleted = 'F' } = await req.body;
+			//console.log("FEEDBACK", { session, host, path, noun, key, type, value, body: req.body });
+			switch (noun) {
+				case 'feedback_delete': {
+					//console.log("DELETING", { path, value });
+					const resX = await db_FEEDBACK.query('update feedback set isdeleted = ? where feedback_id = ?',
+						[
+							"T",
+							value,
+						]);
+					return res.json(resX);
+				}
+				break;
+				case 'feedback_by_page_new': {
+					//console.log("INSERTING", { path, value, session, host, feedback_id, uri, subject, who, whence, comments, isdeleted  });
+					const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?, `isdeleted` = ?',
+						[
+							session,
+							host,
+							uri,
+							subject,
+							who || 'No Email Given',
+							whence || 'No Location Given',
+							comments,
+							isdeleted || 'F'
+						]);
+					return res.json(resX);
+				}
+				break;
+				case 'feedback_by_page_reply': {
+					if (!feedback_id) { return res.json({ error: 'missing: feedback_id' }); }
+					const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `parent_id` = ?, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
+						[
+							session,
+							host,
+							feedback_id,
+							uri,
+							subject,
+							who || 'No Email Given',
+							whence || 'No Location Given',
+							comments
+						]);
+					//console.log("XX", resX);
+					return res.json(resX);
+				}
+				break;
+				default:
+					return res.json({});
+			}
+		} else if (method === 'DELETE' || method === 'POST') {
+			// admin user
+			if (!db_ADMIN) {
+				db_ADMIN = await (new Db({
+					port: process.env['JBC_MYSQL_PORT'],
+					host: process.env['JBC_MYSQL_HOST'],
+					user: process.env['JBC_MYSQL_USER_ADMIN'],
+					database: process.env['JBC_MYSQL_DATABASE'],
+					password: process.env['JBC_MYSQL_PASSWORD_ADMIN'],
+					connectionLimit: process.env['JBC_MYSQL_CONNECTIONLIMIT'],
+					queueLimit: process.env['JBC_MYSQL_QUEUELIMIT'],
+				})).start();
+			}
 			if (noun === 'gigsong_edit')  {
 				const deletes = [];
 				const inserts = [];
 				const edits = await Promise.all(req.body?.edits?.map(async (e) => {
-					return await db_FEEDBACK.query('update gigsong set ? where gigsong_id = ?',
+					return await db_ADMIN.query('update gigsong set ? where gigsong_id = ?',
 						[
 							e,
 							e.gigsong_id,
@@ -199,53 +263,8 @@ const handler = async (req, res) => {
 				);
 
 				res.json({ edits, deletes, inserts });
-			} else if (noun === 'feedback_delete')  {
-				const resX = await db_FEEDBACK.query('update feedback set isdeleted = ? where feedback_id = ?',
-					[
-						"T",
-						value,
-					]);
-				//console.log("RES", resX);
-				res.json(rets);
 			} else {
-				const { session, host, feedback_id, uri, subject, who, whence, comments, isdeleted = 'F' } = req.body;
-				//console.log("POST", { session, host, path, noun, key, type, value, body: req.body });
-				switch (noun) {
-					case 'feedback_by_page_new': {
-						const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?, `isdeleted` = ?',
-							[
-								session,
-								host,
-								uri,
-								subject,
-								who || 'No Email Given',
-								whence || 'No Location Given',
-								comments,
-								isdeleted || 'F'
-							]);
-						return res.json(resX);
-					}
-					break;
-					case 'feedback_by_page_reply': {
-						if (!feedback_id) { return res.json({ error: 'missing: feedback_id' }); }
-						const resX = await db_FEEDBACK.query('insert IGNORE into `feedback` set `session` = ?, `host` = ?, `feedback_id` = NULL, `parent_id` = ?, `uri` = ?, `subject` = ?, `dtcreated` = NOW(), `who` = ?, `whence` = ?, `comments` = ?',
-							[
-								session,
-								host,
-								feedback_id,
-								uri,
-								subject,
-								who || 'No Email Given',
-								whence || 'No Location Given',
-								comments
-							]);
-						//console.log("XX", resX);
-						return res.json(resX);
-					}
-					break;
-					default:
-						return res.json({ error: `unknown: ${noun}` });
-				}
+				return res.json({});
 			}
 		} else if (method === 'GET')  {
 			if (!db) {
