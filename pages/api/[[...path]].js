@@ -192,13 +192,18 @@ const handler = async (req, res) => {
 			//console.log("FEEDBACK", { session, host, path, noun, key, type, value, body: req.body });
 			switch (noun) {
 				case 'feedback_delete': {
-					//console.log("DELETING", { path, value });
-					const resX = await db_FEEDBACK.query('update feedback set isdeleted = ? where feedback_id = ?',
+					//console.log("DELETING", { noun, key, type, value, session });
+					await db_FEEDBACK.query('update feedback set isdeleted = ? where isdeleted = ? and feedback_id = ? and session = ?',
 						[
 							"T",
+							"F",
+							key,
 							value,
-						]);
-					return res.json(resX);
+						])
+					.then(resX => res.json(resX))
+					.catch(error => {
+						return res.json({ noun, key, value, error });
+					});
 				}
 				break;
 				case 'feedback_by_page_new': {
