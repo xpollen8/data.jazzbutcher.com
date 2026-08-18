@@ -243,6 +243,7 @@ const handler = async (req, res) => {
 					return res.json({});
 			}
 		} else if (method === 'DELETE' || method === 'POST') {
+			/* NOT YET
 			// admin user
 			if (!db_ADMIN) {
 				db_ADMIN = await (new Db({
@@ -271,6 +272,7 @@ const handler = async (req, res) => {
 			} else {
 				return res.json({});
 			}
+		*/
 		} else if (method === 'GET')  {
 			if (!db) {
 				db = await (new Db({
