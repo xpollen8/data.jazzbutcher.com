@@ -18,7 +18,7 @@ const queries = [
 
 	{ noun: "feedbacks", query: "select * from feedback where isdeleted != 'T' order by dtcreated desc" },
 	{ noun: "feedback", query: "select * from feedback where isdeleted != 'T' and uri = '{{value}}' order by dtcreated desc" },
-	{ noun: "recent_feedback", query: "select * from feedback where isdeleted != 'T' order by dtcreated desc limit 5" },
+	{ noun: "recent_feedback", query: "select * from feedback where isdeleted != 'T' and dtcreated > now() - interval 1 year order by dtcreated desc" },
 ];
 
 const censorEmail = (str) => {
