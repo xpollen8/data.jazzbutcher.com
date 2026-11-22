@@ -12,6 +12,6 @@
   },
   "dependencies": {
     "mywrap": "github:xpollen8/mywrap",
-    "next": "16.4.5"
+    "next": "16.4.6"
   }
 }
